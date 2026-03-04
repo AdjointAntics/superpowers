@@ -369,3 +369,122 @@ Otherwise → not TDD
 ```
 
 No exceptions without your human partner's permission.
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of TDD. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Tests as Universal Properties
+
+In category theory, a **universal property** describes what an object does by how it relates to other objects, not by its internal structure. Tests capture universal properties of code:
+
+- A test states: "For all inputs of type A, the output must satisfy property P"
+- This is exactly a **morphism** from the implementation to the specification
+- When the test passes, the implementation **preserves** the universal property
+
+### The RED Phase: Specifying the Morphism
+
+Writing a failing test is defining the **domain** and **codomain** of our desired morphism:
+
+```
+test: Spec(domain) → Spec(codomain)
+     ↑              ↑
+  implementation  expected behavior
+```
+
+The failing test says: "I want a morphism f: A → B with property P, but f doesn't exist yet."
+
+### The GREEN Phase: Finding the Morphism
+
+Implementing code to pass the test is finding the **morphism** that makes the diagram commute:
+
+```
+     f (to be found)
+  A --------→ B
+  │           │
+  │           │ passes test
+  ↓           ↓
+Spec(A)   Spec(B)
+```
+
+The test is a **pullback** - it pulls back the specification to verify f satisfies P.
+
+### Test Coverage as Coequalizer
+
+A comprehensive test suite is a **coequalizer** - it "equalizes" all the ways the code could go wrong:
+
+```
+All possible inputs    Edge cases
+       ↓                    ↓
+    Code f ──────────► Test suite
+            (must commute)
+```
+
+If the coequalizer holds, the code satisfies all test properties.
+
+### Refactoring as Isomorphism
+
+When refactoring, you're finding an **isomorphism** between implementations:
+
+```
+OldImpl ──iso──► NewImpl
+   │                │
+   │                │ (same behavior)
+   ↓                ↓
+ Spec            Spec
+```
+
+The behavior category is preserved - the tests still pass. The internal representation changes, but the universal property remains.
+
+### Property-Based Testing as Forall
+
+Property-based testing explicitly captures **universal quantification**:
+
+> For all x in domain, P(x) must hold
+
+This is literally the categorical notion of a **morphism preserving structure** - the property is preserved under all morphisms in the domain.
+
+### The Monadic Nature of Testing
+
+Tests form a **monad** - they compose in a way that preserves structure:
+
+- **Unit/Return**: Wrap a value in a test (identity)
+- **Bind/FlatMap**: Chain tests while preserving the property
+- **Map**: Transform values without losing verification
+
+This is why good tests compose - they form a monad.
+
+### Bug Fixes as Kernel Traces
+
+When fixing a bug, you're finding the **kernel** of a broken morphism:
+
+- The bug is where the implementation fails to preserve structure
+- The failing test traces the kernel - shows exactly where structure breaks
+- The fix is making the kernel trivial (0) - no more failures
+
+---
+
+## Summary Table
+
+| Categorical Concept | TDD Application |
+|--------------------|-----------------|
+| Universal property | What the test verifies about the code |
+| Failing test (RED) | Defining desired morphism |
+| Passing test (GREEN) | Morphism found, diagram commutes |
+| Refactoring | Isomorphism - same behavior, different form |
+| Test coverage | Coequalizer - all failure paths equalized |
+| Property-based testing | Universal quantification (forall) |
+| Bug fix | Kernel trace - finding where structure breaks |
+
+---
+
+## Using with categorical-reframing
+
+When designing tests or analyzing test failures, invoke `superpowers:categorical-reframing` to:
+- Identify the universal property being tested
+- Map the test structure to categorical terms
+- Reason about what the test actually verifies

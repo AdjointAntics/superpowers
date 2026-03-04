@@ -94,3 +94,78 @@ digraph brainstorming {
 - **Explore alternatives** - Always propose 2-3 approaches before settling
 - **Incremental validation** - Present design, get approval before moving on
 - **Be flexible** - Go back and clarify when something doesn't make sense
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of brainstorming. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Design Space as a Category
+
+Think of the design space as a **category** where:
+
+- **Objects** = possible design approaches
+- **Morphisms** = refinements/transitions between designs (f: A → B)
+- **Commuting diagram** = when multiple refinement paths lead to equivalent results
+
+### Finding the Universal Property
+
+When exploring design options, frame the question as finding the **universal property**:
+
+> Instead of "What features should this have?"
+> Ask "What is the universal property that characterizes the ideal design?"
+
+A **universal property** describes what makes a solution unique by stating what it does, not how it's built. The design that's **initial** (or **terminal**) in the appropriate category is your target.
+
+### The Adjunction Pattern
+
+Design exploration involves finding **adjunctions**:
+
+- **Left adjoint**: "Free" construction - minimal structure that satisfies constraints
+- **Right adjoint**: "Co-free" construction - maximal structure preserving properties
+
+**Example:**
+- "What's the simplest way to structure this?" (left adjoint - free)
+- "What's the most complete way?" (right adjoint - cofree)
+- The truth usually lies in between - finding the adjunction.
+
+### Duality in Design
+
+Apply the **dual** principle systematically:
+
+| This Approach | Consider Its Dual |
+|---------------|-------------------|
+| Push-based | Pull-based |
+| Server-driven | Client-driven |
+| Eager computation | Lazy computation |
+| Centralized | Distributed |
+| Synchronous | Asynchronous |
+
+Asking "What's the opposite?" often reveals overlooked solutions.
+
+### Objects and Morphisms
+
+- **Types/classes** = Objects in your design category
+- **Methods/functions** = Morphisms between objects
+- **Interfaces** = Universal properties (what morphisms must preserve)
+- **Dependencies** = Functor mappings between categories
+
+### Using categorical-reframing
+
+When exploring approaches, invoke `superpowers:categorical-reframing` to systematically map your design questions to categorical terms, then reason at that level of abstraction before translating back.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Brainstorming Application |
+|---------------------|---------------------------|
+| Universal property | The defining characteristic of ideal design |
+| Initial object | Simplest design satisfying all constraints |
+| Terminal object | Most complete design with all features |
+| Commuting diagram | Multiple paths lead to same result |
+| Adjunction | Free vs co-free design trade-off |
+| Duality | Consider the opposite approach |

@@ -103,3 +103,76 @@ You: [Fix progress indicators]
 - Request clarification
 
 See template at: requesting-code-review/code-reviewer.md
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of requesting code review. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Review as Morphism to Quality
+
+A code review request is a **morphism** from implementation to the quality category:
+- **Domain**: The implementation (code + tests)
+- **Codomain**: Quality standards (correctness, style, tests)
+- Review checks: Does implementation → quality preserve structure?
+
+### Review as Natural Transformation
+
+The review process is a **natural transformation** between two functors:
+- **ImplementationFunctor**: Maps tasks to code
+- **QualityFunctor**: Maps code to quality metrics
+
+The reviewer applies the natural transformation to verify: η ∘ Implementation = Quality
+
+### Issues as Kernel Elements
+
+Issues found in review are elements of the **kernel**:
+- The implementation failed to preserve some quality property
+- Each issue is a specific element where structure broke
+
+### Critical as Monomorphism
+
+Critical issues are **monomorphisms** - they break essential structure:
+- Must fix before proceeding
+- Like a subset that must be preserved
+
+### Assessment as Coequalizer
+
+"Ready to proceed" is the **coequalizer** holding:
+- All critical issues resolved
+- All important issues addressed
+- The implementation equals the specification
+
+### Feedback as Pullback
+
+Reviewer feedback is a **pullback**:
+- Pulls back the quality standards to specific code locations
+- Shows exactly where implementation diverges from spec
+
+### Iterative Refinement as Composition
+
+Fixing issues and re-reviewing is **morphism composition**:
+- f: code → review_issues
+- g: code_fixes → review_clean
+- f ∘ g: iteration toward terminal state
+
+### Using categorical-reframing
+
+When analyzing review feedback or structuring review requests, invoke `superpowers:categorical-reframing` to map the review process to categorical terms.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Code Review Application |
+|--------------------|----------------------|
+| Review request | Morphism: implementation → quality |
+| Review process | Natural transformation η |
+| Issues found | Kernel elements (structure breaking) |
+| Critical issues | Monomorphism (must preserve) |
+| Ready to proceed | Coequalizer holds |
+| Feedback | Pullback of quality to code |
+| Iteration | Morphism composition toward terminal |

@@ -82,3 +82,79 @@ After all tasks complete and verified:
 - **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of plan execution. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Execution as Functor Composition
+
+Executing a plan is **functor composition**:
+
+```
+PlanFunctor: Tasks → Implementations
+TDDCycle: Test → Implement → Verify → Commit
+
+FullExecution = TDDCycle ∘ PlanFunctor
+```
+
+Each task flows through the TDD cycle - this is composing functors.
+
+### Parallel Tasks as Coproduct
+
+Independent tasks that can run in parallel represent a **coproduct** (sum):
+- Task A ⊔ Task B = parallel execution
+- Results combine via the universal property of coproduct
+
+### Sequential Tasks as Product
+
+Dependent tasks that must run in order represent a **product**:
+- Task A × Task B = sequential execution
+- Output of A becomes input to B
+
+### Batches as Natural Transformations
+
+Moving between batches is a **natural transformation**:
+- Batch 1 results → Batch 2 inputs
+- The transformation preserves the structure of the plan functor
+
+### Checkpoints as Pullbacks
+
+Verification checkpoints are **pullbacks**:
+- Verify task completed = pullback of implementation against expected
+- Pullback ensures: does the implementation match the spec?
+
+### Commit as Identity Morphism
+
+Each commit is an **identity morphism** in the development category:
+- Preserves the current state
+- Enables future composition (branching, merging)
+
+### Terminal State: All Tasks Complete
+
+The goal is reaching the **terminal object** where:
+- All functors have composed
+- All pullbacks have resolved
+- Ready for merge (isomorphism to main)
+
+### Using categorical-reframing
+
+When analyzing task dependencies or execution flow, invoke `superpowers:categorical-reframing` to map the execution structure to categorical terms.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Plan Execution Application |
+|--------------------|---------------------------|
+| Execution | Functor composition: plan → implementation |
+| Parallel tasks | Coproduct (A ⊔ B) |
+| Sequential tasks | Product (A × B) |
+| Between batches | Natural transformation |
+| Checkpoint | Pullback: implementation ↔ spec |
+| Commit | Identity morphism |
+| All complete | Terminal object |

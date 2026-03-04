@@ -114,3 +114,76 @@ After saving the plan, offer execution choice:
 **If Parallel Session chosen:**
 - Guide them to open new session in worktree
 - **REQUIRED SUB-SKILL:** New session uses superpowers:executing-plans
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of plan writing. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Plans as Functors
+
+A plan is a **functor** mapping from the task category to the implementation category:
+
+- **Domain category**: Tasks with dependencies (partial order)
+- **Codomain category**: Implementation actions (code, tests, commits)
+- **The functor preserves structure**: Task dependencies → implementation order
+
+### Tasks as Morphisms
+
+Each task in the plan is a **morphism**:
+- Input: context + files to modify
+- Output: implemented feature + tests + commit
+
+The composition of tasks must **commute** properly - sequential tasks compose to the final implementation.
+
+### Task Decomposition as Fiber
+
+Breaking down a feature into tasks is finding the **fibers** of the implementation functor:
+- Each task is a fiber over a specific implementation goal
+- Dependencies between tasks are the **coboundary** - how fibers connect
+
+### Granularity as Unit/Counit
+
+Fine-grained tasks (2-5 min) vs. coarse-grained:
+- **Fine-grained**: More morphisms, easier to verify each composes
+- **Coarse-grained**: Fewer morphisms, but composition harder to verify
+
+The ideal task size is where the **unit** of the adjunction is balanced.
+
+### Bite-Sized as Minimal Morphisms
+
+Each step should be a **minimal morphism** - the smallest change that achieves one goal:
+- "Write failing test" = minimal morphism to RED state
+- "Run test" = verification morphism
+- "Implement minimal code" = minimal morphism to GREEN state
+- "Commit" = identity morphism preserving state
+
+### Plan Header as Universal Property
+
+The plan header establishes the **universal property** of the implementation:
+- **Goal**: Specifies the terminal object (what success looks like)
+- **Architecture**: Specifies the category structure (how components relate)
+- **Context**: Specifies the domain (what constraints apply)
+
+### Using categorical-reframing
+
+When decomposing a feature into tasks, invoke `superpowers:categorical-reframing` to:
+- Identify the universal property of the overall feature
+- Map tasks to morphisms in the implementation category
+- Verify task composition commutes properly
+
+---
+
+## Summary Table
+
+| Categorical Concept | Plan Writing Application |
+|---------------------|------------------------|
+| Plan | Functor: tasks → implementation |
+| Task | Morphism: context → implemented feature |
+| Task decomposition | Fibers of the implementation functor |
+| Task granularity | Balance of unit/counit in adjunction |
+| Minimal step | Minimal morphism achieving one goal |
+| Plan header | Universal property of success |

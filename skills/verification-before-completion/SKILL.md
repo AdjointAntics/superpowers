@@ -137,3 +137,81 @@ From 24 failure memories:
 Run the command. Read the output. THEN claim the result.
 
 This is non-negotiable.
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of verification. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Verification as Pullback
+
+Verification is a **pullback** - confirming implementation equals specification:
+```
+Implementation    Specification
+      \              /
+       → verify ←
+           |
+      Are they equal?
+```
+If the pullback holds, implementation ≡ specification.
+
+### Success as Terminal Object
+
+"Tests pass" or "build succeeds" is reaching the **terminal object**:
+- Terminal object: there's only one (all tests pass)
+- If you're at terminal, you can claim completion
+- But you must VERIFY you're at terminal (not assume)
+
+### Failure as Kernel Non-Empty
+
+Test failures or build errors mean the **kernel is non-empty**:
+- Kernel ≠ ∅ → structure not preserved
+- Can't claim completion until kernel = ∅
+
+### Verification as Testing Functor
+
+Running tests applies a **functor**:
+- F: Implementation → TestResults
+- Functor preserves structure
+- If F(impl) = passing, impl preserves spec
+
+### "I think it's done" as False Morphism
+
+Claiming completion without verification is a **false morphism**:
+- f: implementation → "complete" but f doesn't exist in the category
+- The morphism only appears to exist due to rationalization
+
+### Regression Test as Coequalizer
+
+A proper regression test is a **coequalizer**:
+- Two paths: fix applied, fix reverted
+- Coequalizer holds when both paths equal (test fails then passes)
+- This proves the fix causes the test to pass
+
+### Agent Reports as Unverified Morphism
+
+Agent reports of success are **unverified morphisms**:
+- Agent claims f: impl → success
+- But you must verify: does f actually exist?
+- Pullback check required
+
+### Using categorical-reframing
+
+When deciding what to verify or analyzing verification results, invoke `superpowers:categorical-reframing` to map verification to categorical terms.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Verification Application |
+|-------------------|------------------------|
+| Verification | Pullback: impl ↔ spec |
+| Success | Terminal object (only one) |
+| Failure | Kernel ≠ ∅ (structure broken) |
+| Test suite | Functor: impl → results |
+| Premature claim | False morphism (doesn't exist) |
+| Regression test | Coequalizer: fix ↔ no-fix |
+| Agent success report | Unverified morphism |

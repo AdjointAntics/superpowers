@@ -198,3 +198,85 @@ git worktree remove <worktree-path>
 
 **Pairs with:**
 - **using-git-worktrees** - Cleans up worktree created by that skill
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of finishing a development branch. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Terminal Object Detection
+
+Finishing a branch is reaching the **terminal object** in the development category:
+- All tasks are **terminal** (completed)
+- All tests are **terminal** (passing)
+- The implementation **commutes** with the specification
+
+### Final Review as Coequalizer
+
+The final code review before merging is a **coequalizer**:
+- It equalizes all potential issues found during development
+- If the coequalizer holds, the code is ready for merge
+- Reviewers verify: implementation ≡ specification
+
+### Merge as Pushout
+
+Merging the feature branch into main is a **pushout**:
+```
+feature     main
+   \         /
+    → merge ←
+        |
+     main'
+```
+The pushout combines the histories, preserving both.
+
+### Cleanup as Identity
+
+Cleaning up the worktree is establishing the **identity morphism**:
+- Returns to clean state
+- Enables new development cycles (composition)
+
+### Branch Options as Morphisms
+
+The 4 options are different morphisms from the current state:
+
+| Option | Morphism | Result |
+|--------|----------|--------|
+| Merge locally | f: feature → main | main' = f(feature) ⊔ main |
+| Push/PR | g: feature → remote | remote' = g(feature) |
+| Keep as-is | id: feature → feature | Preserves current |
+| Discard | 0 → ∅ | Terminal empty |
+
+### Verification as Pullback
+
+Before any finishing action, verification is a **pullback**:
+- Pull back tests against implementation
+- Pull back spec against code
+- Only proceed when pullbacks are satisfied
+
+### Worktree as Section
+
+The worktree is a **section** of the main repository:
+- A split that recombines cleanly
+- Removing it is the **retraction** to the identity
+
+### Using categorical-reframing
+
+When analyzing the completion state, invoke `superpowers:categorical-reframing` to map the finishing process to categorical terms.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Finishing Branch Application |
+|-------------------|---------------------------|
+| All tasks complete | Terminal object |
+| Final review | Coequalizer of all issues |
+| Merge | Pushout of feature into main |
+| Cleanup worktree | Identity morphism (return to clean) |
+| Pre-merge verification | Pullback: implementation ↔ spec |
+| Worktree | Section of repository |
+| Option selection | Choosing the terminal morphism |

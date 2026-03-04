@@ -178,3 +178,81 @@ From debugging session (2025-10-03):
 - All investigations completed concurrently
 - All fixes integrated successfully
 - Zero conflicts between agent changes
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of dispatching parallel agents. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Independent Agents as Coproduct
+
+Independent agents solving separate problems represent a **coproduct** (disjoint sum):
+- Agent A ⊔ Agent B ⊔ Agent C
+- Each agent operates in its own "fiber" of the problem space
+- No interference because fibers are disjoint
+
+### Focused Scope as Fiber
+
+Each agent's focused scope is a **fiber** of the problem:
+- Problem space P
+- Each agent works in fiber Pᵢ (subset of problems)
+- Independence: fibers are disjoint
+
+### Coordination as Product
+
+Integrating results from multiple agents is a **product**:
+- Agent results × Agent results × Agent results
+- The product combines all results into unified state
+
+### Agent Prompt as Universal Property
+
+A good agent prompt specifies the **universal property** of the solution:
+- What the fix must satisfy (not how to fix it)
+- The terminal object: "working tests that pass"
+- The agent finds the morphism to that terminal
+
+### Verification as Pullback
+
+After agents return, verification is a **pullback**:
+```
+Agent A fix    Agent B fix
+      \           /
+       → integrate ←
+           |
+      Full suite passes?
+```
+Pullback verifies all fixes compose without conflict.
+
+### Conflicts as Pullback Failure
+
+When agent changes conflict, the **pullback fails**:
+- Overlapping fibers (both edit same code)
+- Need to serialize or merge
+
+### Parallel as Functor Application
+
+Dispatching agents in parallel is applying a **functor** to multiple inputs:
+- Functor F: Problem → Solution
+- F(A), F(B), F(C) all apply simultaneously
+- Functor preserves structure independently
+
+### Using categorical-reframing
+
+When analyzing whether to dispatch in parallel or how to structure prompts, invoke `superpowers:categorical-reframing` to map to categorical terms.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Parallel Agents Application |
+|-------------------|--------------------------|
+| Independent agents | Coproduct: A ⊔ B ⊔ C |
+| Focused scope | Fiber of problem space |
+| Integration | Product of results |
+| Good prompt | Universal property of solution |
+| Verification | Pullback: fixes compose |
+| Conflict | Pullback failure (overlap) |
+| Parallel dispatch | Functor application |

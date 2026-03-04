@@ -216,3 +216,82 @@ Ready to implement auth feature
 
 **Pairs with:**
 - **finishing-a-development-branch** - REQUIRED for cleanup after work complete
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of using git worktrees. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Worktree as Pullback
+
+A git worktree is a **pullback**:
+```
+Main repo    Branch
+    \          /
+     → worktree ←
+         |
+    Isolated context
+```
+
+The pullback creates an isolated context that combines:
+- The main repository state
+- A new branch for feature work
+
+### Worktree as Section
+
+The worktree is a **section** of the repository:
+- A split from main that can recombine (via merge)
+- Maintains identity while being separate
+
+### Isolated Context as Fiber
+
+Working in a worktree is working in a **fiber**:
+- Fiber: all commits reachable from this branch
+- Main branch = different fiber
+- Fibers are disjoint - changes in one don't affect another
+
+### Ignoring as Initial Object
+
+Verifying `.gitignore` is finding the **initial object**:
+- Initial = nothing tracked that shouldn't be
+- The empty set of accidentally-tracked files is initial
+
+### Cleanup as Retraction
+
+Removing a worktree after merge is a **retraction**:
+- Returns to single-section (main) state
+- The section collapses back to identity
+
+### Baseline Tests as Kernel
+
+Running baseline tests verifies the **kernel is empty**:
+- Kernel = pre-existing failures
+- If kernel = ∅, new failures are truly new
+
+### Worktree Location as Product
+
+The worktree location choice is a **product**:
+- Local .worktrees × global ~/.config/superpowers
+- Project conventions × user preferences
+- Choose the product that satisfies all constraints
+
+### Using categorical-reframing
+
+When analyzing worktree structure or planning cleanup, invoke `superpowers:categorical-reframing` to map worktree concepts to categorical terms.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Git Worktree Application |
+|-------------------|------------------------|
+| Worktree | Pullback: main × branch |
+| Isolated work | Section of repository |
+| Branch | Fiber (disjoint from main) |
+| .gitignore check | Finding initial object (nothing extra) |
+| Cleanup | Retraction to single-section |
+| Baseline tests | Kernel = ∅ (no pre-existing failures) |
+| Location choice | Product of constraints |

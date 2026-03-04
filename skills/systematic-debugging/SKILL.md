@@ -294,3 +294,87 @@ From debugging sessions:
 - Random fixes approach: 2-3 hours of thrashing
 - First-time fix rate: 95% vs 40%
 - New bugs introduced: Near zero vs common
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of systematic debugging. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Bugs as Kernel Breakage
+
+In category theory, the **kernel** of a morphism f: A → B is the set of elements in A that map to the identity in B. When a bug occurs, the code's behavior has a **non-trivial kernel** - inputs that should map to valid outputs but instead map to errors.
+
+Finding the bug = finding the kernel of the broken morphism.
+
+### Root Cause as Pullback
+
+The root cause is the **pullback** of the failure:
+
+```
+      code
+    A ----→ B (expected output)
+    │        │
+    │        │ (failure)
+    ▼        ▼
+  inputs  errors
+```
+
+The pullback finds exactly which inputs cause the failure - that's your kernel.
+
+### Symptom vs Root Cause: Domain vs Codomain
+
+- **Symptom**: The failure appears in the **codomain** (output is wrong)
+- **Root cause**: The breakage is in the **domain** (input handling is wrong)
+
+Fixing symptoms = modifying the codomain (doesn't fix the underlying morphism).
+Fixing root causes = modifying the domain (makes the kernel trivial).
+
+### The Four Phases in Categorical Terms
+
+| Phase | Categorical Interpretation |
+|-------|--------------------------|
+| Root Cause Investigation | Finding the kernel of f |
+| Hypothesis Formation | Characterizing the kernel |
+| Fix Implementation | Making kernel trivial (0) |
+| Verification | Proving kernel = { } |
+
+### Testing as Verification
+
+A passing test after fix proves the kernel is empty:
+
+```
+Test: f(x) = expected
+If test passes for all x, then kernel(f) = ∅
+```
+
+The fix is correct when the morphism now preserves structure for all inputs.
+
+### Duality: Forward vs Backward Tracing
+
+- **Forward tracing** (from input): Push along the morphism, find where structure breaks
+- **Backward tracing** (from error): Pull back along the morphism, find the kernel
+
+Both approaches find the same kernel. Use both to confirm.
+
+### Using categorical-reframing
+
+When debugging, invoke `superpowers:categorical-reframing` to:
+- Map the bug to kernel/structure-breaking terms
+- Identify whether the issue is in domain or codomain
+- Apply pullback reasoning to find exact failure conditions
+
+---
+
+## Summary Table
+
+| Categorical Concept | Debugging Application |
+|--------------------|----------------------|
+| Kernel | The set of inputs causing failures |
+| Root cause | Where the morphism fails to preserve structure |
+| Symptom | Failure visible in codomain |
+| Fix | Making the kernel trivial |
+| Pullback | Finding exact failure conditions |
+| Verification | Proving kernel = empty set |

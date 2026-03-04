@@ -211,3 +211,85 @@ When replying to inline review comments on GitHub, reply in the comment thread (
 Verify. Question. Then implement.
 
 No performative agreement. Technical rigor always.
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of receiving code review. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Feedback as Morphism from Reviewer
+
+Review feedback is a **morphism** from the reviewer's category to your implementation:
+- Reviewer maps code → issues
+- Your task: verify the morphism is valid in your context
+
+### Verification as Pullback
+
+Before implementing feedback, verify via **pullback**:
+```
+Your context   Reviewer's claim
+      \           /
+       → verify ←
+           |
+      Does it apply?
+```
+Pull back the suggestion to your specific context.
+
+### Push Back as Co-product
+
+When pushing back, you're establishing a **coproduct**:
+- Your reasoning ∪ Their suggestion = better understanding
+- Show the union preserves correctness
+
+### Issues as Kernel
+
+Each issue is an element of the **kernel** of the implementation:
+- Kernel element: where structure fails to preserve
+- Fixing: making kernel trivial (0)
+
+### Correct Feedback as Identity
+
+When feedback is correct, it's the **identity morphism**:
+- Implementation already satisfies the property
+- No change needed, just acknowledge
+
+### Implementation as Composition
+
+Fixing issues is **composition**:
+- f: code → issues
+- g: code_fixes → clean
+- f ∘ g: iteration toward correct state
+
+### YAGNI as Initial Object
+
+YAGNI checks find the **initial object**:
+- Initial = simplest that satisfies requirements
+- Adding unused features = adding non-initial elements
+
+### Verification Before Action as Pullback
+
+"Verify it breaks things" = pullback before proceeding:
+- Pull back the change against tests
+- If pullback is empty, safe to proceed
+
+### Using categorical-reframing
+
+When analyzing feedback or deciding how to respond, invoke `superpowers:categorical-reframing` to map the review response to categorical terms.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Receiving Review Application |
+|--------------------|---------------------------|
+| Reviewer feedback | Morphism: reviewer_category → code |
+| Verification | Pullback to local context |
+| Push back | Coproduct: reasoning ∪ suggestion |
+| Issue | Kernel element (structure breaks) |
+| Correct feedback | Identity morphism |
+| Fix iteration | Composition toward terminal |
+| YAGNI check | Finding initial object |
+| Regression check | Pullback against test suite |

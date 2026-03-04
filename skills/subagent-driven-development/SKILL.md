@@ -240,3 +240,77 @@ Done!
 
 **Alternative workflow:**
 - **superpowers:executing-plans** - Use for parallel session instead of same-session execution
+
+---
+
+## Categorical Framing
+
+<EXTREMELY-IMPORTANT>
+This section provides a category-theoretic interpretation of subagent-driven development. Use this framing when working with developers who think in abstract mathematical terms.
+</EXTREMELY-IMPORTANT>
+
+### Subagents as Morphisms
+
+Each subagent in this workflow is a **morphism**:
+
+- **Implementer subagent**: A morphism from (task + context) → implemented-feature
+- **Spec reviewer**: A morphism checking Spec(specification) → Spec(implementation) preserves structure
+- **Code quality reviewer**: A morphism checking Quality(implementation) meets standards
+
+### Two-Stage Review as Natural Transformation
+
+The required two-stage review (spec compliance → code quality) is a **natural transformation** between two functors:
+
+```
+SpecCompliance: Implementations → SpecMatches
+CodeQuality: Implementations → QualityStandards
+
+η: SpecCompliance → CodeQuality (natural transformation)
+```
+
+The naturality condition ensures that regardless of the implementation, spec compliance review transforms to code quality review in a structure-preserving way.
+
+### Task Decomposition as Fiber
+
+The overall implementation plan is a **functor** from the task category to the implementation category. Each task is a **fiber** of this functor - the preimage of "completed" under the implementation morphism.
+
+### Composition Structure
+
+The full workflow forms a composition of morphisms:
+
+```
+Task → Implementer → SpecReview → CodeQuality → Completed
+
+This is: η₂ ∘ η₁ ∘ implementer: Task → Completed
+```
+
+Where each stage is a morphism that must commute properly.
+
+### Fresh Context as Pullback
+
+"Fresh subagent per task" prevents context pollution. Categorically, this is a **pullback** - ensuring the subagent's internal state is determined solely by the current task, not contaminated by previous implementations.
+
+### Terminal State: The Completed Object
+
+The goal is reaching the **terminal object** in the development category - the state where:
+- All tasks are implemented
+- All spec reviews pass (η₁ commutes)
+- All quality reviews pass (η₂ commutes)
+- Ready for merge (isomorphism to production category)
+
+### Using categorical-reframing
+
+When analyzing task dependencies or review results, invoke `superpowers:categorical-reframing` to map the structural relationships to categorical terms, then apply categorical reasoning to find optimal compositions.
+
+---
+
+## Summary Table
+
+| Categorical Concept | Subagent-Driven Development |
+|---------------------|----------------------------|
+| Implementer subagent | Morphism: task → implemented-feature |
+| Two-stage review | Natural transformation between functors |
+| Task decomposition | Fibers of the implementation functor |
+| Fresh context per task | Pullback preventing state contamination |
+| Passing all reviews | Commuting diagram complete |
+| Ready for merge | Terminal object in dev category |
