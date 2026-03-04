@@ -265,11 +265,11 @@ Removing a worktree after merge is a **retraction**:
 - Returns to single-section (main) state
 - The section collapses back to identity
 
-### Baseline Tests as Kernel
+### Baseline Tests as Equalizer
 
-Running baseline tests verifies the **kernel is empty**:
-- Kernel = pre-existing failures
-- If kernel = ∅, new failures are truly new
+Running baseline tests verifies the **equalizer holds**:
+- Equalizer: tests that should pass = tests that do pass
+- If equalizer holds, new failures are truly new
 
 ### Worktree Location as Product
 
@@ -293,5 +293,5 @@ When analyzing worktree structure or planning cleanup, invoke `superpowers:categ
 | Branch | Fiber (disjoint from main) |
 | .gitignore check | Finding initial object (nothing extra) |
 | Cleanup | Retraction to single-section |
-| Baseline tests | Kernel = ∅ (no pre-existing failures) |
+| Baseline tests | Equalizer: expected = actual |
 | Location choice | Product of constraints |

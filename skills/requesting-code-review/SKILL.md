@@ -127,11 +127,11 @@ The review process is a **natural transformation** between two functors:
 
 The reviewer applies the natural transformation to verify: η ∘ Implementation = Quality
 
-### Issues as Kernel Elements
+### Issues as Equalizer Break
 
-Issues found in review are elements of the **kernel**:
-- The implementation failed to preserve some quality property
-- Each issue is a specific element where structure broke
+Issues found in review are where the **equalizer fails**:
+- The implementation diverges from the quality specification
+- Each issue is where spec and impl don't agree
 
 ### Critical as Monomorphism
 
@@ -149,7 +149,7 @@ Critical issues are **monomorphisms** - they break essential structure:
 ### Feedback as Pullback
 
 Reviewer feedback is a **pullback**:
-- Pulls back the quality standards to specific code locations
+- Pull back the quality standards to specific code locations
 - Shows exactly where implementation diverges from spec
 
 ### Iterative Refinement as Composition
@@ -171,7 +171,7 @@ When analyzing review feedback or structuring review requests, invoke `superpowe
 |--------------------|----------------------|
 | Review request | Morphism: implementation → quality |
 | Review process | Natural transformation η |
-| Issues found | Kernel elements (structure breaking) |
+| Issues found | Equalizer break (spec ≠ impl) |
 | Critical issues | Monomorphism (must preserve) |
 | Ready to proceed | Coequalizer holds |
 | Feedback | Pullback of quality to code |

@@ -411,7 +411,7 @@ Implementing code to pass the test is finding the **morphism** that makes the di
 Spec(A)   Spec(B)
 ```
 
-The test is a **pullback** - it pulls back the specification to verify f satisfies P.
+The test is an **equalizer** - it finds where expected and actual behavior agree.
 
 ### Test Coverage as Coequalizer
 
@@ -458,13 +458,12 @@ Tests form a **monad** - they compose in a way that preserves structure:
 
 This is why good tests compose - they form a monad.
 
-### Bug Fixes as Kernel Traces
+### Bug Fixes as Equalizer Restoration
 
-When fixing a bug, you're finding the **kernel** of a broken morphism:
-
-- The bug is where the implementation fails to preserve structure
-- The failing test traces the kernel - shows exactly where structure breaks
-- The fix is making the kernel trivial (0) - no more failures
+When fixing a bug, you're restoring the **equalizer**:
+- The bug is where implementation diverges from specification
+- The failing test shows where equalizer fails
+- The fix restores equalization - behavior now matches spec
 
 ---
 
@@ -478,7 +477,7 @@ When fixing a bug, you're finding the **kernel** of a broken morphism:
 | Refactoring | Isomorphism - same behavior, different form |
 | Test coverage | Coequalizer - all failure paths equalized |
 | Property-based testing | Universal quantification (forall) |
-| Bug fix | Kernel trace - finding where structure breaks |
+| Bug fix | Restoring the equalizer between spec and impl |
 
 ---
 

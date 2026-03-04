@@ -22,19 +22,19 @@ Category theory provides a universal language for understanding software develop
 |---------------------|------------------------|
 | Function/method | **Morphism** (arrow between objects) |
 | Type/class | **Object** (in a category) |
-| Interface/protocol | **Universal property** |
+| Interface/protocol | **Universal property** (what a type must satisfy) |
 | Refactoring | **Isomorphism** (same behavior, different representation) |
 | Testing | **Property verification** (preservation of structure) |
-| Bug | **Kernel** of a morphism (where it fails to preserve structure) |
-| Debugging | **Kernel tracing** - finding where structure breaks |
+| Bug | **Equalizer failure** (where behavior diverges from spec) |
+| Debugging | **Fiber analysis** - finding where structure breaks |
 | Feature | **New morphism** in the category |
 | Composition | **Morphism composition** (f ∘ g) |
 | Dependency injection | **Functor** (mapping between categories) |
-| Pattern | **Natural transformation** |
-| Refinement | **Monomorphism** (specialization) |
-| Generalization | **Epimorphism** (broadening) |
-| State management | **Morphism to/from state object** |
-| Error handling | **Zero object** (null) or **coproduct** (Either type) |
+| Pattern | **Natural transformation** (structure-preserving map between functors) |
+| Refinement (subtype) | **Monomorphism** (injective specialization) |
+| Generalization | **Epimorphism** (surjective broadening) |
+| State management | **State monad** (morphism with state threading) |
+| Error handling | **Coproduct** (Either type) or **Exception monad** |
 | Empty case | **Initial object** |
 | Default case | **Terminal object** |
 
@@ -151,7 +151,7 @@ Apply the categorical insight to the concrete implementation.
 This skill complements:
 - **brainstorming**: Apply categorical framing when exploring approaches
 - **test-driven-development**: Tests verify universal properties
-- **systematic-debugging**: Find the kernel of the failure
+- **systematic-debugging**: Find the equalizer failure (where spec ≠ impl)
 
 ## The Category Theory Mindset
 

@@ -165,11 +165,11 @@ If the pullback holds, implementation ≡ specification.
 - If you're at terminal, you can claim completion
 - But you must VERIFY you're at terminal (not assume)
 
-### Failure as Kernel Non-Empty
+### Failure as Equalizer Break
 
-Test failures or build errors mean the **kernel is non-empty**:
-- Kernel ≠ ∅ → structure not preserved
-- Can't claim completion until kernel = ∅
+Test failures or build errors mean the **equalizer is broken**:
+- Equalizer between spec and impl is non-trivial
+- Can't claim completion until equalizer is restored
 
 ### Verification as Testing Functor
 
@@ -210,7 +210,7 @@ When deciding what to verify or analyzing verification results, invoke `superpow
 |-------------------|------------------------|
 | Verification | Pullback: impl ↔ spec |
 | Success | Terminal object (only one) |
-| Failure | Kernel ≠ ∅ (structure broken) |
+| Failure | Equalizer broken (spec ≠ impl) |
 | Test suite | Functor: impl → results |
 | Premature claim | False morphism (doesn't exist) |
 | Regression test | Coequalizer: fix ↔ no-fix |

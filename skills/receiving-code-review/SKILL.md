@@ -238,17 +238,17 @@ Your context   Reviewer's claim
 ```
 Pull back the suggestion to your specific context.
 
-### Push Back as Co-product
+### Push Back as Coproduct
 
 When pushing back, you're establishing a **coproduct**:
 - Your reasoning ∪ Their suggestion = better understanding
 - Show the union preserves correctness
 
-### Issues as Kernel
+### Issues as Equalizer Break
 
-Each issue is an element of the **kernel** of the implementation:
-- Kernel element: where structure fails to preserve
-- Fixing: making kernel trivial (0)
+Each issue is where the implementation **fails to equal** the specification:
+- Equalizer broken between code and quality standard
+- Fixing: restoring the equalizer
 
 ### Correct Feedback as Identity
 
@@ -288,7 +288,7 @@ When analyzing feedback or deciding how to respond, invoke `superpowers:categori
 | Reviewer feedback | Morphism: reviewer_category → code |
 | Verification | Pullback to local context |
 | Push back | Coproduct: reasoning ∪ suggestion |
-| Issue | Kernel element (structure breaks) |
+| Issue | Equalizer break (spec ≠ impl) |
 | Correct feedback | Identity morphism |
 | Fix iteration | Composition toward terminal |
 | YAGNI check | Finding initial object |
