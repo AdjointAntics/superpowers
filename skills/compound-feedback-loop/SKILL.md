@@ -36,6 +36,100 @@ Where:
 
 ## The Cycle
 
+---
+
+## Invocation Chains
+
+Each phase explicitly invokes the next skill. These chains form morphisms in the skill category.
+
+### L Functor Chain (Development)
+
+```julia
+# Phase 1 → Phase 2: Spec → Implementation
+invoke(
+    superpowers:topos-package-development,
+    spec::Spec
+) → impl::Implementation
+
+# Phase 2 → Phase 3: Implementation → TestResult
+invoke(
+    superpowers:testy-property-testing,
+    impl::Implementation;
+    spec=spec
+) → test_result::TestResult
+
+# Phase 3 → Phase 4: TestResult → BenchmarkResult
+invoke(
+    superpowers:homtime-optimization,
+    test_result::TestResult;
+    targets=benchmarks_to_run
+) → benchmark_result::BenchmarkResult
+
+# Phase 4 → Phase 5: BenchmarkResult → AnalysisResult
+invoke(
+    superpowers:homtime-ci-integration,
+    benchmark_result::BenchmarkResult;
+    baseline=previous_benchmarks
+) → analysis_result::AnalysisResult
+```
+
+### R Functor Chain (Feedback)
+
+```julia
+# Phase 5 → Phase 6: AnalysisResult → Visualization
+invoke(
+    superpowers:poly-ui-representation,
+    analysis_result::AnalysisResult
+) → visualization::Visualization
+
+# Phase 6 → Phase 7: Visualization → Insight
+invoke(
+    superpowers:poly-widget-composition,
+    visualization::Visualization
+) → insight::Insight
+
+# Phase 7 → Phase 8: Insight → Refinement
+# (This is the unit η: Id → R∘L)
+refine(spec::Spec, insight::Insight) → refinement::Refinement
+```
+
+### Full Cycle Composition
+
+```julia
+# Compose the full L functor: Spec → AnalysisResult
+L = compose(
+    topos-package-development,     # Spec → Impl
+    testy-property-testing,       # Impl → TestResult  
+    homtime-optimization,         # TestResult → BenchmarkResult
+    homtime-ci-integration        # BenchmarkResult → AnalysisResult
+)
+
+# Compose the full R functor: AnalysisResult → Refinement
+R = compose(
+    poly-ui-representation,       # AnalysisResult → Visualization
+    poly-widget-composition,      # Visualization → Insight
+    # Insight → Refinement is the unit η
+)
+```
+
+### The Adjunction
+
+```julia
+# Full L∘R composition (development after feedback)
+deployed_artifact = L(R(analysis_result))
+
+# Full R∘L composition (feedback after development)  
+new_spec = R(L(spec))
+
+# The unit η: Spec → R(L(Spec))
+η(spec) = refine(spec, insight(L(spec)))
+
+# The counit ε: L(R(Analysis)) → Analysis
+ε(analysis) = L(R(analysis))  # deployed artifact
+```
+
+---
+
 ### Phase 1: Specification (L⁰)
 
 ```julia
@@ -275,6 +369,34 @@ This skill integrates ALL other skills:
 - **superpowers:poly-widget-composition** - R¹
 - **superpowers:yoneda-representability** - Bridge
 - **superpowers:testy-stateful-testing** - L²
+
+---
+
+## Shared Types (Substrate)
+
+The compound feedback loop uses shared types that flow between skills. See `shared-types.md` for the type hierarchy:
+
+```
+CompoundArtifact
+├── Spec                    # Starting specification
+├── Implementation          # Code satisfying spec
+├── TestResult              # Test outcomes (equalizer)
+├── BenchmarkResult         # HomTime HomSets
+├── AnalysisResult          # Statistical evidence
+├── Visualization           # Poly widgets
+├── Insight                 # Extracted findings
+└── Refinement             # Updated spec (unit η)
+```
+
+These types form the **substrate** for:
+1. **Invocation Chains** - explicit next-skill calls
+2. **Unified Runner** - orchestrates using these types
+
+---
+
+## Unified Runner
+
+For single-command execution, use the unified runner. See `compound-runner.md`.
 
 ## References
 
