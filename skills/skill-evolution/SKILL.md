@@ -354,6 +354,7 @@ This skill integrates with:
 - **superpowers:skill-metrics** - Measures effectiveness
 - **superpowers:topos-dogfooding** - Self-improvement loop
 - **superpowers:compound-feedback-loop** - The evolution mechanism
+- **superpowers:skill-bundling** - Version management for evolved bundles
 
 ## References
 

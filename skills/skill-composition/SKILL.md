@@ -364,6 +364,7 @@ This skill integrates with:
 - **superpowers:skill-meta-reasoning** - Chooses composition strategy
 - **superpowers:compound-feedback-loop** - Composition is the workflow
 - **superpowers:poly-widget-composition** - Similar monoidal structure
+- **superpowers:skill-bundling** - Bundle composition via ⊗, +, ▷
 
 ## References
 

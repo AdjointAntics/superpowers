@@ -369,6 +369,7 @@ This skill integrates ALL other skills:
 - **superpowers:poly-widget-composition** - R¹
 - **superpowers:yoneda-representability** - Bridge
 - **superpowers:testy-stateful-testing** - L²
+- **superpowers:skill-bundling** - Bundle skills for the loop
 
 ---
 
