@@ -22,66 +22,54 @@ Different layers catch different cases:
 ### Layer 1: Entry Point Validation
 **Purpose:** Reject obviously invalid input at API boundary
 
-```typescript
-function createProject(name: string, workingDirectory: string) {
-  if (!workingDirectory || workingDirectory.trim() === '') {
-    throw new Error('workingDirectory cannot be empty');
-  }
-  if (!existsSync(workingDirectory)) {
-    throw new Error(`workingDirectory does not exist: ${workingDirectory}`);
-  }
-  if (!statSync(workingDirectory).isDirectory()) {
-    throw new Error(`workingDirectory is not a directory: ${workingDirectory}`);
-  }
-  // ... proceed
-}
+```julia
+function create_project(name::String, working_directory::String)
+    isempty(strip(working_directory)) &&
+        error("working_directory cannot be empty")
+    !isdir(working_directory) &&
+        error("working_directory does not exist: $working_directory")
+    # ... proceed
+end
 ```
 
 ### Layer 2: Business Logic Validation
 **Purpose:** Ensure data makes sense for this operation
 
-```typescript
-function initializeWorkspace(projectDir: string, sessionId: string) {
-  if (!projectDir) {
-    throw new Error('projectDir required for workspace initialization');
-  }
-  // ... proceed
-}
+```julia
+function initialize_workspace(project_dir::String, session_id::String)
+    isempty(project_dir) &&
+        error("project_dir required for workspace initialization")
+    # ... proceed
+end
 ```
 
 ### Layer 3: Environment Guards
 **Purpose:** Prevent dangerous operations in specific contexts
 
-```typescript
-async function gitInit(directory: string) {
-  // In tests, refuse git init outside temp directories
-  if (process.env.NODE_ENV === 'test') {
-    const normalized = normalize(resolve(directory));
-    const tmpDir = normalize(resolve(tmpdir()));
+```julia
+function git_init(directory::String)
+    # In tests, refuse git init outside temp directories
+    if get(ENV, "JULIA_ENV", "") == "test"
+        normalized = abspath(directory)
+        tmp = abspath(tempdir())
 
-    if (!normalized.startsWith(tmpDir)) {
-      throw new Error(
-        `Refusing git init outside temp dir during tests: ${directory}`
-      );
-    }
-  }
-  // ... proceed
-}
+        if !startswith(normalized, tmp)
+            error("Refusing git init outside temp dir during tests: $directory")
+        end
+    end
+    # ... proceed
+end
 ```
 
 ### Layer 4: Debug Instrumentation
 **Purpose:** Capture context for forensics
 
-```typescript
-async function gitInit(directory: string) {
-  const stack = new Error().stack;
-  logger.debug('About to git init', {
-    directory,
-    cwd: process.cwd(),
-    stack,
-  });
-  // ... proceed
-}
+```julia
+function git_init(directory::String)
+    st = stacktrace()
+    @debug "About to git init" directory pwd=pwd() stack=st
+    # ... proceed
+end
 ```
 
 ## Applying the Pattern
@@ -95,18 +83,18 @@ When you find a bug:
 
 ## Example from Session
 
-Bug: Empty `projectDir` caused `git init` in source code
+Bug: Empty `project_dir` caused `git init` in source code
 
 **Data flow:**
-1. Test setup → empty string
-2. `Project.create(name, '')`
-3. `WorkspaceManager.createWorkspace('')`
-4. `git init` runs in `process.cwd()`
+1. Test setup -> empty string
+2. `create_project("name", "")`
+3. `create_workspace("")`
+4. `git init` runs in `pwd()`
 
 **Four layers added:**
-- Layer 1: `Project.create()` validates not empty/exists/writable
-- Layer 2: `WorkspaceManager` validates projectDir not empty
-- Layer 3: `WorktreeManager` refuses git init outside tmpdir in tests
+- Layer 1: `create_project()` validates not empty/exists/writable
+- Layer 2: `create_workspace()` validates project_dir not empty
+- Layer 3: `git_init()` refuses git init outside tmpdir in tests
 - Layer 4: Stack trace logging before git init
 
 **Result:** All 1847 tests passed, bug impossible to reproduce

@@ -10,19 +10,19 @@ Flaky tests often guess at timing with arbitrary delays. This creates race condi
 
 ```dot
 digraph when_to_use {
-    "Test uses setTimeout/sleep?" [shape=diamond];
+    "Test uses sleep()?" [shape=diamond];
     "Testing timing behavior?" [shape=diamond];
     "Document WHY timeout needed" [shape=box];
     "Use condition-based waiting" [shape=box];
 
-    "Test uses setTimeout/sleep?" -> "Testing timing behavior?" [label="yes"];
+    "Test uses sleep()?" -> "Testing timing behavior?" [label="yes"];
     "Testing timing behavior?" -> "Document WHY timeout needed" [label="yes"];
     "Testing timing behavior?" -> "Use condition-based waiting" [label="no"];
 }
 ```
 
 **Use when:**
-- Tests have arbitrary delays (`setTimeout`, `sleep`, `time.sleep()`)
+- Tests have arbitrary delays (`sleep`, `Timer`)
 - Tests are flaky (pass sometimes, fail under load)
 - Tests timeout when run in parallel
 - Waiting for async operations to complete
@@ -33,72 +33,68 @@ digraph when_to_use {
 
 ## Core Pattern
 
-```typescript
-// ❌ BEFORE: Guessing at timing
-await new Promise(r => setTimeout(r, 50));
-const result = getResult();
-expect(result).toBeDefined();
+```julia
+# BAD: Guessing at timing
+sleep(0.05)
+result = get_result()
+@test result !== nothing
 
-// ✅ AFTER: Waiting for condition
-await waitFor(() => getResult() !== undefined);
-const result = getResult();
-expect(result).toBeDefined();
+# GOOD: Waiting for condition
+wait_for(() -> get_result() !== nothing, "result available")
+result = get_result()
+@test result !== nothing
 ```
 
 ## Quick Patterns
 
 | Scenario | Pattern |
 |----------|---------|
-| Wait for event | `waitFor(() => events.find(e => e.type === 'DONE'))` |
-| Wait for state | `waitFor(() => machine.state === 'ready')` |
-| Wait for count | `waitFor(() => items.length >= 5)` |
-| Wait for file | `waitFor(() => fs.existsSync(path))` |
-| Complex condition | `waitFor(() => obj.ready && obj.value > 10)` |
+| Wait for event | `wait_for(() -> any(e -> e.type == :DONE, events), "done")` |
+| Wait for state | `wait_for(() -> machine.state == :ready, "ready")` |
+| Wait for count | `wait_for(() -> length(items) >= 5, "5 items")` |
+| Wait for file | `wait_for(() -> isfile(path), "file exists")` |
+| Complex condition | `wait_for(() -> obj.ready && obj.value > 10, "ready+value")` |
 
 ## Implementation
 
 Generic polling function:
-```typescript
-async function waitFor<T>(
-  condition: () => T | undefined | null | false,
-  description: string,
-  timeoutMs = 5000
-): Promise<T> {
-  const startTime = Date.now();
+```julia
+function wait_for(condition::Function, description::String; timeout_s=5.0)
+    start = time()
 
-  while (true) {
-    const result = condition();
-    if (result) return result;
+    while true
+        result = condition()
+        result && return result
 
-    if (Date.now() - startTime > timeoutMs) {
-      throw new Error(`Timeout waiting for ${description} after ${timeoutMs}ms`);
-    }
+        if time() - start > timeout_s
+            error("Timeout waiting for $description after $(timeout_s)s")
+        end
 
-    await new Promise(r => setTimeout(r, 10)); // Poll every 10ms
-  }
-}
+        sleep(0.01)  # Poll every 10ms
+    end
+end
 ```
 
-See `condition-based-waiting-example.ts` in this directory for complete implementation with domain-specific helpers (`waitForEvent`, `waitForEventCount`, `waitForEventMatch`) from actual debugging session.
+See `condition-based-waiting-example.jl` in this directory for complete implementation with domain-specific helpers (`wait_for_event`, `wait_for_event_count`, `wait_for_event_match`) from actual debugging session.
 
 ## Common Mistakes
 
-**❌ Polling too fast:** `setTimeout(check, 1)` - wastes CPU
-**✅ Fix:** Poll every 10ms
+**BAD: Polling too fast:** `sleep(0.001)` - wastes CPU
+**Fix:** Poll every 10ms
 
-**❌ No timeout:** Loop forever if condition never met
-**✅ Fix:** Always include timeout with clear error
+**BAD: No timeout:** Loop forever if condition never met
+**Fix:** Always include timeout with clear error
 
-**❌ Stale data:** Cache state before loop
-**✅ Fix:** Call getter inside loop for fresh data
+**BAD: Stale data:** Cache state before loop
+**Fix:** Call getter inside loop for fresh data
 
 ## When Arbitrary Timeout IS Correct
 
-```typescript
-// Tool ticks every 100ms - need 2 ticks to verify partial output
-await waitForEvent(manager, 'TOOL_STARTED'); // First: wait for condition
-await new Promise(r => setTimeout(r, 200));   // Then: wait for timed behavior
-// 200ms = 2 ticks at 100ms intervals - documented and justified
+```julia
+# Tool ticks every 100ms - need 2 ticks to verify partial output
+wait_for_event(get_events, :TOOL_STARTED)  # First: wait for condition
+sleep(0.2)                                  # Then: wait for timed behavior
+# 200ms = 2 ticks at 100ms intervals - documented and justified
 ```
 
 **Requirements:**
@@ -110,6 +106,6 @@ await new Promise(r => setTimeout(r, 200));   // Then: wait for timed behavior
 
 From debugging session (2025-10-03):
 - Fixed 15 flaky tests across 3 files
-- Pass rate: 60% → 100%
+- Pass rate: 60% -> 100%
 - Execution time: 40% faster
 - No more race conditions

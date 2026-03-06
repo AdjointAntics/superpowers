@@ -38,55 +38,49 @@ Error: git init failed in /home/adjointantics/project/packages/core
 
 ### 2. Find Immediate Cause
 **What code directly causes this?**
-```typescript
-await execFileAsync('git', ['init'], { cwd: projectDir });
+```julia
+run(Cmd(`git init`, dir=project_dir))
 ```
 
 ### 3. Ask: What Called This?
-```typescript
-WorktreeManager.createSessionWorktree(projectDir, sessionId)
-  → called by Session.initializeWorkspace()
-  → called by Session.create()
-  → called by test at Project.create()
+```julia
+create_session_worktree(project_dir, session_id)
+  # called by initialize_workspace(session)
+  # called by create_session(session)
+  # called by test at create_project()
 ```
 
 ### 4. Keep Tracing Up
 **What value was passed?**
-- `projectDir = ''` (empty string!)
-- Empty string as `cwd` resolves to `process.cwd()`
+- `project_dir = ""` (empty string!)
+- Empty string as `dir` resolves to `pwd()`
 - That's the source code directory!
 
 ### 5. Find Original Trigger
 **Where did empty string come from?**
-```typescript
-const context = setupCoreTest(); // Returns { tempDir: '' }
-Project.create('name', context.tempDir); // Accessed before beforeEach!
+```julia
+ctx = setup_core_test()  # Returns (; temp_dir = "")
+create_project("name", ctx.temp_dir)  # Accessed before setup!
 ```
 
 ## Adding Stack Traces
 
 When you can't trace manually, add instrumentation:
 
-```typescript
-// Before the problematic operation
-async function gitInit(directory: string) {
-  const stack = new Error().stack;
-  console.error('DEBUG git init:', {
-    directory,
-    cwd: process.cwd(),
-    nodeEnv: process.env.NODE_ENV,
-    stack,
-  });
+```julia
+function git_init(directory::String)
+    st = stacktrace()
+    @error "DEBUG git init" directory pwd=pwd() julia_env=get(ENV, "JULIA_ENV", "") stack=st
 
-  await execFileAsync('git', ['init'], { cwd: directory });
-}
+    run(Cmd(`git init`, dir=directory))
+end
 ```
 
-**Critical:** Use `console.error()` in tests (not logger - may not show)
+**Critical:** Use `@error` in tests (not custom logger - may not show)
 
 **Run and capture:**
 ```bash
-npm test 2>&1 | grep 'DEBUG git init'
+yon test 2>&1 | grep 'DEBUG git init'
 ```
 
 **Analyze stack traces:**
@@ -101,7 +95,7 @@ If something appears during tests but you don't know which test:
 Use the bisection script `find-polluter.sh` in this directory:
 
 ```bash
-./find-polluter.sh '.git' 'src/**/*.test.ts'
+./find-polluter.sh '.git' 'test/test_*.jl'
 ```
 
 Runs tests one-by-one, stops at first polluter. See script for usage.
@@ -111,20 +105,20 @@ Runs tests one-by-one, stops at first polluter. See script for usage.
 **Symptom:** `.git` created in `packages/core/` (source code)
 
 **Trace chain:**
-1. `git init` runs in `process.cwd()` ← empty cwd parameter
-2. WorktreeManager called with empty projectDir
-3. Session.create() passed empty string
-4. Test accessed `context.tempDir` before beforeEach
-5. setupCoreTest() returns `{ tempDir: '' }` initially
+1. `git init` runs in `pwd()` <- empty dir parameter
+2. create_session_worktree called with empty project_dir
+3. create_session() passed empty string
+4. Test accessed `ctx.temp_dir` before setup
+5. setup_core_test() returns `(; temp_dir = "")` initially
 
 **Root cause:** Top-level variable initialization accessing empty value
 
-**Fix:** Made tempDir a getter that throws if accessed before beforeEach
+**Fix:** Made temp_dir a getter that throws if accessed before setup
 
 **Also added defense-in-depth:**
-- Layer 1: Project.create() validates directory
+- Layer 1: create_project() validates directory
 - Layer 2: WorkspaceManager validates not empty
-- Layer 3: NODE_ENV guard refuses git init outside tmpdir
+- Layer 3: JULIA_ENV guard refuses git init outside tmpdir
 - Layer 4: Stack trace logging before git init
 
 ## Key Principle
@@ -155,10 +149,10 @@ digraph principle {
 
 ## Stack Trace Tips
 
-**In tests:** Use `console.error()` not logger - logger may be suppressed
+**In tests:** Use `@error` not custom logger - logger may be suppressed
 **Before operation:** Log before the dangerous operation, not after it fails
-**Include context:** Directory, cwd, environment variables, timestamps
-**Capture stack:** `new Error().stack` shows complete call chain
+**Include context:** Directory, pwd, environment variables, timestamps
+**Capture stack:** `stacktrace()` shows complete call chain
 
 ## Real-World Impact
 

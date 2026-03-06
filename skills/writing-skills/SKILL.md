@@ -222,12 +222,12 @@ Use flowcharts ONLY for non-obvious decision points and process loops. Never for
 
 ## Code Examples
 
-One excellent example beats many mediocre ones. Choose the most relevant language. Make it complete, runnable, and well-commented. Do not implement in 5+ languages or create fill-in-the-blank templates.
+One excellent example beats many mediocre ones. Use Julia for all code examples. Use `sh` for shell commands. Make it complete, runnable, and well-commented. Do not implement in 5+ languages or create fill-in-the-blank templates.
 
 ## File Organization
 
 - **Self-contained:** `skill-name/SKILL.md` -- everything inline
-- **With reusable tool:** Add `example.ts` or similar alongside SKILL.md
+- **With reusable tool:** Add `example.jl` or similar alongside SKILL.md
 - **With heavy reference:** Add separate `.md` files (100+ lines) and `scripts/` directory
 
 ## The Iron Law (Same as TDD)
