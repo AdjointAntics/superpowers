@@ -70,13 +70,13 @@ When you can't trace manually, add instrumentation:
 ```julia
 function git_init(directory::String)
     st = stacktrace()
-    @error "DEBUG git init" directory pwd=pwd() julia_env=get(ENV, "JULIA_ENV", "") stack=st
+    @warn "DEBUG git init" directory pwd=pwd() julia_env=get(ENV, "JULIA_ENV", "") stack=st
 
     run(Cmd(`git init`, dir=directory))
 end
 ```
 
-**Critical:** Use `@error` in tests (not custom logger - may not show)
+**Critical:** Use `@warn` in tests (not custom logger - may not show)
 
 **Run and capture:**
 ```bash
@@ -149,7 +149,7 @@ digraph principle {
 
 ## Stack Trace Tips
 
-**In tests:** Use `@error` not custom logger - logger may be suppressed
+**In tests:** Use `@warn` not custom logger - logger may be suppressed
 **Before operation:** Log before the dangerous operation, not after it fails
 **Include context:** Directory, pwd, environment variables, timestamps
 **Capture stack:** `stacktrace()` shows complete call chain

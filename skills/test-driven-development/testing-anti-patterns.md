@@ -130,16 +130,11 @@ BEFORE adding any method to production type:
 
 **The violation:**
 ```julia
-# BAD: Stub breaks test logic
+# BAD: Stub kills side effect test depends on
 @testset "detects duplicate server" begin
-    # Stub prevents config write that test depends on!
-    original_discover = ServerCatalog.discover_and_cache
-    ServerCatalog.discover_and_cache = (args...) -> nothing
-
-    add_server(config)
-    add_server(config)  # Should throw - but won't!
-
-    ServerCatalog.discover_and_cache = original_discover
+    # discover_and_cache stub prevents config write that test depends on!
+    add_server(config; discover=(args...) -> nothing)
+    add_server(config; discover=(args...) -> nothing)  # Should throw - but won't!
 end
 ```
 
@@ -152,14 +147,8 @@ end
 ```julia
 # GOOD: Stub at correct level
 @testset "detects duplicate server" begin
-    # Stub the slow part, preserve behavior test needs
-    original_start = ServerManager.start_server
-    ServerManager.start_server = (args...) -> nothing  # Just stub slow startup
-
-    add_server(config)   # Config written
-    @test_throws DuplicateServerError add_server(config)  # Duplicate detected
-
-    ServerManager.start_server = original_start
+    add_server(config; start=(args...) -> nothing)   # Config written, startup skipped
+    @test_throws DuplicateServerError add_server(config; start=(args...) -> nothing)
 end
 ```
 

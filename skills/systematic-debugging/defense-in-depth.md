@@ -25,9 +25,9 @@ Different layers catch different cases:
 ```julia
 function create_project(name::String, working_directory::String)
     isempty(strip(working_directory)) &&
-        error("working_directory cannot be empty")
+        throw(ArgumentError("working_directory cannot be empty"))
     !isdir(working_directory) &&
-        error("working_directory does not exist: $working_directory")
+        throw(ArgumentError("working_directory does not exist: $working_directory"))
     # ... proceed
 end
 ```
@@ -38,7 +38,7 @@ end
 ```julia
 function initialize_workspace(project_dir::String, session_id::String)
     isempty(project_dir) &&
-        error("project_dir required for workspace initialization")
+        throw(ArgumentError("project_dir required for workspace initialization"))
     # ... proceed
 end
 ```
