@@ -1,73 +1,28 @@
 ---
 name: topos-poly
-description: Polynomial functors, graphical calculus, profunctor optics, and the Poly package in Topos
+description: Use when working with polynomial functors, graphical calculus, profunctor optics, or monoidal structures in the Poly package
 ---
-
 # Topos Poly
 
-## Overview
+## When
+Invoke when building polynomial functors, composing string diagrams, using profunctor optics (lens/prism/traversal), or working with any of Poly's four monoidal structures.
 
-Poly implements polynomial functors, graphical calculus, profunctor optics, and TUI as Moore machines.
+## Iron Laws
+1. Polynomial functors are sums of representables: P(x) = sum of x^{n_i}.
+2. Optics must satisfy their categorical laws (get-put, put-get for lenses; match-build for prisms).
+3. The four monoidal structures have distinct units and tensor products. Do not conflate them.
+4. All Poly abstractions must have algebraic law tests.
 
-## Core Concepts
-
-### Polynomial Functor
-
-A polynomial functor P(x) = Σ_i x^{n_i} is:
-- Sum of containers
-- Each with positions
-
-```julia
-using Poly
-
-# Define polynomial
-p = poly{i -> i + 1}()  # x + x² + ...
-
-# Evaluate
-p(3)  # positions at 3
-```
-
-### Graphical Calculus
-
-String diagrams for monoidal categories:
-
-```julia
-using Poly.Diagrams
-
-# Compose morphisms
-diagram = f ⊗ g ∘ α ∘ id
-
-# Draw
-draw(diagram)
-```
-
-## Objects and Morphisms
-
-### Poly Objects
-
-```julia
-# Container types
-Poly{Position, Direction}
-
-# Direction: input/output
-dir = Input()  # consuming
-dir = Output()  # producing
-```
-
-### Morphisms
-
-```julia
-# Polynomial morphism
-morphism = PolyMorphism(f, g, η)
-
-# Compose
-f ∘ g
-f ⊗ g
-```
+## Process
+1. Define polynomial functors as `Poly{Position, Direction}` containers.
+2. Compose morphisms with `f . g` (sequential) and `f (tensor) g` (parallel).
+3. Build string diagrams using `Poly.Diagrams`: `diagram = f (tensor) g . alpha . id`, then `draw(diagram)`.
+4. Create optics: `lens(get_fn, set_fn)`, `prism(build_fn, try_match_fn)`, `traversal(focus_fn)`.
+5. Use optics: `view(lens, state)`, `set(lens, state, value)`, `over(lens, fn, state)`.
+6. Run tests: `yon test Poly`.
+7. Run benchmarks: `yon bench Poly`.
 
 ## Profunctor Optics
-
-### Optic Types
 
 | Optic | Purpose |
 |-------|---------|
@@ -77,65 +32,23 @@ f ⊗ g
 | Fold | Read-only traversal |
 | Affine | Optional + required |
 
-### Creating Optics
-
-```julia
-using Poly.Optics
-
-# Lens: get + set
-lens = lens(get_fn, set_fn)
-
-# Prism: match + build
-prism = prism(build_fn, try_match_fn)
-
-# Traversal
-traversal = traversal(focus_fn)
-```
-
-### Using Optics
-
-```julia
-# Get (view)
-view(lens, state)
-
-# Set (over)
-set(lens, state, new_value)
-
-# Modify (over)
-over(lens, fn, state)
-```
-
 ## Four Monoidal Structures
-
-Poly has four monoidal structures:
 
 | Structure | Tensor | Unit | Significance |
 |-----------|--------|------|-------------|
-| (Poly, ◁, y) | poly_compose | Arena(1,1) | Comonoids = categories |
-| (Poly, ⊗, 1) | poly_mul | Arena(1,0) | Parallel machines |
+| (Poly, compose, y) | poly_compose | Arena(1,1) | Comonoids = categories |
+| (Poly, tensor, 1) | poly_mul | Arena(1,0) | Parallel machines |
 | (Poly, +, 0) | poly_add | Arena(0,0) | Choice |
-| (Poly, ×, 1) | poly_product | Arena(1,0) | Cartesian |
-
-## Testing
-
-```sh
-yon test Poly
-yon bench Poly
-```
+| (Poly, product, 1) | poly_product | Arena(1,0) | Cartesian |
 
 ## Subdirectories
+- `Poly/Objects/` -- Polynomial objects
+- `Poly/Morphisms/` -- Morphisms
+- `Poly/Diagrams/` -- Graphical calculus
+- `Poly/Dynamics/` -- State machines
+- `Poly/Symmetry/` -- Symmetries
+- `Poly/Duality/` -- Dualities
+- `Poly/Modes/` -- Mode theory
 
-- Poly/Objects/ - Polynomial objects
-- Poly/Morphisms/ - Morphisms
-- Poly/Diagrams/ - Graphical calculus
-- Poly/Dynamics/ - State machines
-- Poly/Symmetry/ - Symmetries
-- Poly/Duality/ - Dualities
-- Poly/Modes/ - Mode theory
-
-## Integration with superpowers
-
-Use with:
-- **superpowers:topos-yon-cli** - For running tests
-- **superpowers:topos-testing** - For law verification
-- **superpowers:topos-theory-foundations** - For category theory
+## Composability
+Expects Theory protocols and LawKit for law verification. Produces polynomial functor compositions and optics consumed by PolyModes (TUI) and other application-tier packages.

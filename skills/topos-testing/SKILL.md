@@ -1,296 +1,62 @@
 ---
 name: topos-testing
-description: Property-based testing and categorical law verification in Topos using Testy
+description: Use when writing or running tests in Topos -- law verification, property testing, test conventions, and yon test commands
 ---
-
 # Topos Testing
 
-## Overview
+## When
+Invoke when writing new tests, verifying categorical laws, running test suites, or debugging test failures across Topos packages.
 
-Testing in Topos follows categorical principles: every abstraction MUST have its algebraic laws tested. Testy provides the shared testing foundation with property-based testing, shrinking, and categorical law suites.
+## Iron Laws
+1. Every categorical abstraction MUST have its algebraic laws tested (functor, monad, comonad, adjunction).
+2. Julia's `@test` does NOT accept string messages. Use `@testset "description" begin ... end` instead.
+3. Test files must be named `test/test_*.jl` for auto-discovery.
+4. Property-based tests should cover algebraic laws, not just example cases.
 
-## Core Principles
+## Process
+1. Run all tests: `yon test`.
+2. Run a specific package: `yon test Algebra`.
+3. Run a single test file: `yon test Theory::test_functor`.
+4. Run verbose: `yon -v test`.
+5. Name test files `test/test_*.jl` (auto-discovered by yon).
+6. If `test/runtests.jl` exists and is non-empty, it is used as the entry point instead.
+7. Setup files (`test/*.jl` not matching `test_*`) are included first.
+8. Write functor law tests: `@test fmap(identity, x) == x` and `@test fmap(f . g, x) == fmap(f, fmap(g, x))`.
+9. Write monad law tests: left identity, right identity, associativity.
+10. Write applicative law tests: identity, composition, homomorphism, interchange.
 
-1. **Every categorical abstraction requires law tests** - functors, monads, comonads, adjunctions, etc.
-2. **Property-based testing** - test properties, not just examples
-3. **Law suites** - categorical laws are first-class test targets
+## Law Testing Patterns
 
-## Running Tests
-
-```sh
-# Test all packages (tier-parallel)
-yon test
-
-# Test specific package
-yon test Algebra
-
-# Single test file
-yon test Theory::test_functor
-
-# Verbose
-yon -v test Algebra
-```
-
-## Test File Structure
-
+**Functor laws:**
 ```julia
-# test/test_my_feature.jl
-
-# Setup - runs before test files
-using Test
-using Theory  # or other package
-
-# Test functions - use test_ prefix
-function test_functor_identity()
-    @test fmap(id, x) == x
-end
-
-function test_functor_composition()
-    @test fmap(f ∘ g, x) == fmap(f, fmap(g, x))
-end
-
-# Run tests
-@testset "Functor laws" begin
-    test_functor_identity()
-    test_functor_composition()
-end
+@test fmap(identity, x) == identity(x)
+@test fmap(f . g, x) == (fmap(f) . fmap(g))(x)
 ```
 
-## Test Naming Convention
-
-- File: `test/test_*.jl` (auto-discovered)
-- Alternative: `test/runtests.jl` (if exists and non-empty)
-- Setup files: `test/setup_*.jl` or `test/*.jl` not matching `test_*`
-
-## Categorical Law Testing
-
-### Functor Laws
-
+**Monad laws:**
 ```julia
-function test_functor_laws(f, x)
-    # Identity: fmap(id) = id
-    @test fmap(identity, x) == identity(x)
-    
-    # Composition: fmap(f ∘ g) = fmap(f) ∘ fmap(g)
-    @test fmap(f ∘ g, x) == (fmap(f) ∘ fmap(g))(x)
-end
+@test (return_m >=> f)(x) == f(x)          # left identity
+@test (m >=> return_m)(x) == m(x)          # right identity
+@test ((f >=> g) >=> h)(x) == (f >=> (g >=> h))(x)  # associativity
 ```
 
-### Monad Laws
-
+**Applicative laws:**
 ```julia
-function test_monad_laws(m)
-    # Left identity: return >=> f = f
-    @test (return ∘ f)(x) == f(x)
-    
-    # Right identity: m >=> return = m
-    @test (m >=> return)(x) == m(x)
-    
-    # Associativity: (f >=> g) >=> h = f >=> (g >=> h)
-    @test ((f >=> g) >=> h)(x) == (f >=> (g >=> h))(x)
-end
+@test pure(identity) |> app(v) == v         # identity
+@test pure(f) |> app(pure(x)) == pure(f(x)) # homomorphism
 ```
 
-### Applicative Laws
+## Auto-Discovery Rules
+- Files matching `test/test_*.jl` are auto-discovered and run in supervised `@testset`.
+- If `test/runtests.jl` exists and is non-empty, it overrides auto-discovery.
+- Packages within a dependency tier run in parallel; tiers run sequentially.
 
-```julia
-function test_applicative_laws(app)
-    # Identity
-    @test pure(identity) ⊛ v == v
-    
-    # Composition
-    @test pure(∘) ⊛ u ⊛ v ⊛ w == u ⊛ (v ⊛ w)
-    
-    # Homomorphism
-    @test pure(f) ⊛ pure(x) == pure(f(x))
-    
-    # Interchange
-    @test u ⊛ pure(y) == pure(f -> f(y)) ⊛ u
-end
-```
+## Assertion Notes
+- `@test condition` -- basic assertion.
+- `@test_throws ExceptionType expr` -- expect exception.
+- `@test_nowarn expr` -- expect no warnings.
+- `@testset "name" begin ... end` -- grouped assertions with description.
+- NEVER write `@test "message"` -- this does not work in Julia.
 
-## Property-Based Testing
-
-### Basic Structure
-
-```julia
-using Test
-
-function test_property_name()
-    # Generate random data
-    x = rand(Int)
-    y = rand(Int)
-    
-    # Test property
-    @test property_holds(x, y)
-    
-    # Test with multiple cases
-    @testset for _ in 1:100
-        x = rand(1:1000)
-        @test property(x)
-    end
-end
-```
-
-### Using Testy's Generators
-
-```julia
-# Testy provides generators for categorical types
-using Testy
-
-function test_generator()
-    @testset "Generator tests" begin
-        # Use Testy's shrinking generators
-    end
-end
-```
-
-## Stateful Testing
-
-Testy supports stateful property-based testing for stateful systems:
-
-```julia
-function test_stateful_system()
-    # Define state transitions
-    # Test state invariants
-end
-```
-
-## Law Suites
-
-Testy provides categorical law suites as reusable test modules:
-
-```julia
-using Testy
-
-# Run predefined law suite
-@testset "Functor laws" begin
-    test_functor_laws(my_functor, test_data)
-end
-
-# Use Testy's suite
-@testset "Categorical laws" begin
-    @testset "Functor" begin
-        check_functor(my_functor)
-    end
-    @testset "Monad" begin
-        check_monad(my_monad)
-    end
-end
-```
-
-## Test Execution
-
-### Via yon CLI
-```sh
-yon test                 # All packages
-yon test Algebra         # Single package
-yon test Algebra::test_functor  # Single file
-```
-
-### Direct Julia
-```sh
-julia -e 'using Pkg; Pkg.test("PackageName")'
-```
-
-## Assertions
-
-### Standard Julia Tests
-
-```julia
-# Basic
-@test condition
-@test_throws ExceptionType expression
-@test_nowarn expression
-@test_logs :info expression
-
-# With message - use testset
-@testset "description" begin
-    @test condition
-end
-```
-
-**Note**: Julia's `@test` does NOT accept string messages. Use `@testset "name"`.
-
-### Custom Assertions
-
-```julia
-macro my_assert(condition, message)
-    quote
-        if !($condition)
-            error($message)
-        end
-    end
-end
-```
-
-## Debugging Failed Tests
-
-```sh
-# Run verbose to see all output
-yon -v test Package
-
-# Run single test file
-yon test Package::test_specific_file
-```
-
-## Integration with superpowers
-
-Use with:
-- **superpowers:topos-yon-cli** - For running tests
-- **superpowers:topos-theory-foundations** - For understanding categorical laws
-- **superpowers:topos-algebra** - For testing free/cofree constructions
-
-## Common Patterns
-
-### Testing Morphisms
-
-```julia
-@testset "Morphism properties" begin
-    # Closure
-    @test is_well_defined(f, domain)
-    
-    # Preservation
-    @test preserves_structure(f, x, y)
-end
-```
-
-### Testing Adjunctions
-
-```julia
-function test_adjunction(L, R, x)
-    # Unit
-    @test unit(x) == R(L(x))
-    
-    # Counit  
-    @test counit(L(x)) == x
-    
-    # Triangle laws
-    @test L(unit(x)) == unit(L(x)) ∘ counit(L(x))
-end
-```
-
-### Testing Universal Properties
-
-```julia
-function test_universal_property(obj, morphism)
-    # Check universal mapping property
-    @test all(conditions) do other
-        unique_mapping = unique_morphism(other)
-        @test factor_through(unique_mapping, morphism)
-    end
-end
-```
-
-## Red Flags
-
-- Don't add `@test "message"` - Julia doesn't support it
-- Don't skip law tests for new categorical abstractions
-- Don't test implementation details - test observable properties
-- Don't forget shrinking for property-based tests
-
-## References
-
-- Testy package source
-- test/test_*.jl files in packages
-- Categorical law definitions in Theory
+## Composability
+Expects packages with `test/` directories following naming conventions. Produces test reports consumed by CI and `yon test` output.

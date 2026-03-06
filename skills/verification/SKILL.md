@@ -1,6 +1,7 @@
 ---
 name: verification
 description: Use before claiming any work is complete, fixed, or passing
+allowed-tools: [Bash, Read, Grep, Glob]
 ---
 # Verification
 

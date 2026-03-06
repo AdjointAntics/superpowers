@@ -1,217 +1,68 @@
 ---
 name: strict-custom-rules
-description: Domain-specific lint rules via Grothendieck construction, morphism sections, and composite functors using Strict
+description: Use when creating domain-specific lint rules for Strict, composing rules via product/sum, or registering custom rules globally or per-project
 ---
-
 # Strict Custom Rules
 
-## Categorical Foundation
+## When
+Invoke when the built-in Strict rules do not cover your domain requirements and you need to define, compose, or register custom lint rules.
 
-A custom lint rule is a **section** of the linting functor - a morphism that picks out a specific subclass of violations. Rules compose via the **Grothendieck construction** - building product rules from simpler components.
+## Iron Laws
+1. Every custom rule must subtype `Strict.Rule` and implement `Strict.check()`.
+2. Register metadata (name, category, description) for every rule.
+3. Prefer composing existing rules over writing new ones from scratch.
+4. Test custom rules against known-violating and known-clean code before registering.
 
-## Core Concept: Rule as Section
+## Process
+1. Define a custom rule struct:
+   ```julia
+   struct NoGlobals <: Strict.Rule
+       allow_readonly::Bool
+   end
+   ```
+2. Implement the check function:
+   ```julia
+   function Strict.check(rule::NoGlobals, node::Expr)
+       violations = Violation[]
+       for n in traverse(node)
+           if is_global(n)
+               push!(violations, Violation(
+                   rule=:no_globals, node=n,
+                   message="Global variable reference: $(n)",
+                   severity=:warning
+               ))
+           end
+       end
+       return violations
+   end
+   ```
+3. Register metadata:
+   ```julia
+   Strict.rule_name(::Type{NoGlobals}) = :no_globals
+   Strict.category(::Type{NoGlobals}) = :warning
+   Strict.description(::Type{NoGlobals}) = "Disallow global variable references"
+   ```
+4. Compose rules with product and sum:
+   ```julia
+   strict = @rule NoGlobals x NoShadowing      # product: all must pass
+   permissive = @rule NoGlobals + NoTypePiracy  # sum: any triggers
+   ```
+5. Set rule precedence:
+   ```julia
+   config = @rule precedence(critical_rule, warning_rule, style_rule)
+   ```
+6. Register globally: `Strict.register_rule!(NoGlobals)`.
+7. Register per-project: `Strict.register_rule!(NoGlobals; scope=:project)`.
+8. For stateful rules, use mutable state and `Strict.check!()`:
+   ```julia
+   struct StatefulRule <: Strict.Rule
+       seen::Set{Symbol}
+   end
+   function Strict.check!(rule::StatefulRule, node::Expr)
+       push!(rule.seen, get_symbol(node))
+       check_with_state(rule, node)
+   end
+   ```
 
-```julia
-using Strict
-
-# A rule R is a section of the linting functor L
-# R: Violation → Code such that L ∘ R = Id
-# 
-# i.e., R picks out a specific type of violation
-
-struct MyRule <: Strict.Rule
-    # Rule configuration
-end
-```
-
-## Creating Custom Rules
-
-### Basic Rule Structure
-
-```julia
-using Strict
-
-# Define a custom rule
-struct NoGlobals <: Strict.Rule
-    allow_readonly::Bool
-end
-
-# Check the rule
-function Strict.check(rule::NoGlobals, node::Expr)
-    violations = Violation[]
-    
-    # Find global references
-    for node in traverse(node)
-        if is_global(node)
-            push!(violations, Violation(
-                rule=:no_globals,
-                node=node,
-                message="Global variable reference: $(node)",
-                severity=:warning
-            ))
-        end
-    end
-    
-    return violations
-end
-```
-
-### Rule Metadata
-
-```julia
-# Register rule metadata
-function Strict.rule_name(::Type{NoGlobals})
-    :no_globals
-end
-
-function Strict.category(::Type{NoGlobals})
-    :warning
-end
-
-function Strict.description(::Type{NoGlobals})
-    "Disallow global variable references"
-end
-```
-
-## The Grothendieck Construction
-
-### Product Rules
-
-Rules compose via the Grothendieck construction:
-
-```julia
-# Given rules R₁ and R₂, the product rule:
-# R = R₁ × R₂
-# 
-# Checks both rules and combines violations
-
-combined = @rule NoGlobals × NoType piracy × NoShadowing
-```
-
-### Sum Rules
-
-```julia
-# Sum: either rule triggers
-permissive = @rule NoGlobals + NoType piracy
-
-# Strict: all must pass  
-strict = @rule NoGlobals × NoShadowing
-```
-
-## Rule Morphisms
-
-### Sections
-
-A rule is a **section** of the lint functor:
-
-```julia
-# R: Violation → Code
-# L ∘ R = Id(Violation)
-#
-# R is a right inverse to L
-
-my_section = MyRule(config)
-```
-
-### Natural Transformations
-
-Transform between rules:
-
-```julia
-# η: R₁ → R₂
-# A natural transformation between rule functors
-# 
-# L(η) = Id (preserves the linting structure)
-
-strict_to_permissive = convert_rule(MyStrictRule, MyPermissiveRule)
-```
-
-## Composing Rules
-
-### Rule Products
-
-```julia
-# Create a rule product
-strict_config = @rule no_globals × no_piracy × no_shadowing
-```
-
-### Rule Precedence
-
-```julia
-# Precedence: earlier rules can suppress later ones
-config = @rule precedence(
-    critical_rule,   # Runs first, can suppress
-    warning_rule,   # Runs second
-    style_rule      # Runs last
-)
-```
-
-## Advanced Patterns
-
-### Dependent Rules
-
-```julia
-# Rules can depend on configuration
-struct DependedRule <: Strict.Rule
-    config::DependentConfig
-end
-
-# Check can use configuration
-function Strict.check(rule::DependedRule, node::Expr)
-    if rule.config.enabled
-        # Check rule
-    else
-        # No violations
-    end
-end
-```
-
-### State Rules
-
-```julia
-# Rules can maintain state across nodes
-struct StatefulRule <: Strict.Rule
-    seen::Set{Symbol}
-end
-
-function Strict.check!(rule::StatefulRule, node::Expr)
-    # Update state
-    push!(rule.seen, get_symbol(node))
-    
-    # Check using state
-    check_with_state(rule, node)
-end
-```
-
-## Rule Registration
-
-### Global Registration
-
-```julia
-# Register globally
-Strict.register_rule!(NoGlobals)
-```
-
-### Project Registration
-
-```julia
-# Register for project
-Strict.register_rule!(NoGlobals; scope=:project)
-```
-
-## Integration
-
-Use with:
-- **superpowers:strict-linting** - Base linting
-- **superpowers:compound-feedback-loop** - Quality pipeline
-
-## Key Principles
-
-1. **Rules are sections** - Right inverse of linting functor
-2. **Composition is Grothendieck** - Products and sums
-3. **Natural transformations** convert between rule styles
-
-## References
-
-- Strict.jl: rules/ directory
-- Rule types: Strict/types.jl
+## Composability
+Expects a `Strict.Rule` subtype with `check()` implementation. Produces `Violation` values compatible with the strict-linting pipeline. Compose multiple custom rules into product or sum configurations.

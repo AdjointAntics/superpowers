@@ -1,73 +1,33 @@
 ---
 name: topos-benchmarking
-description: HomTime measurement, temporal composition, and benchmarking in Topos
+description: Use when benchmarking packages with HomTime or BenchmarkTools -- measures morphism timing, allocation, and composition
 ---
-
 # Topos Benchmarking
 
-## Overview
+## When
+Invoke when measuring performance of any Topos package, writing new benchmarks, or investigating performance regressions.
 
-HomTime provides the Hom-functor measurement foundation - benchmarking as categorical measurement.
+## Iron Laws
+1. Every benchmark file lives in `bench/` and follows auto-discovery naming conventions.
+2. Use BenchmarkTools `@benchmarkable` for suite entries; use HomTime for categorical measurement.
+3. Never commit performance regressions without justification.
 
-## Core Concept
+## Process
+1. Run all benchmarks: `yon bench`.
+2. Run a specific package: `yon bench Algebra`.
+3. Run verbose: `yon -v bench`.
+4. Write benchmark files at `bench/benchmarks/*_benchmark.jl` using BenchmarkTools:
+   ```julia
+   using BenchmarkTools, MyPackage
+   SUITE = BenchmarkGroup()
+   SUITE["my_function"] = @benchmarkable my_function(input)
+   ```
+5. Use HomTime API for categorical measurement: `measure(f, x)`, `time_compose(f, g, x)`, `allocate(f, x)`.
+6. For sequential composition timing use `time_seq(f, g, x)`. For parallel use `time_par(f, g, x)`.
 
-The Hom-functor measures morphism behavior:
-- Input → Output time
-- Memory allocation
-- Cache behavior
-
-## Running Benchmarks
-
-```sh
-# Run all benchmarks
-yon bench
-
-# Run specific package
-yon bench Algebra
-
-# Verbose output
-yon -v bench
-```
-
-## Benchmark Structure
-
-```julia
-# bench/benchmarks/my_benchmark.jl
-
-using BenchmarkTools
-using MyPackage
-
-SUITE = BenchmarkGroup()
-
-SUITE["my_function"] = @benchmarkable my_function(input)
-```
-
-## Using HomTime
-
-```julia
-using HomTime
-
-# Measure morphism
-measure(f, x)
-
-# Time composition
-time_compose(f, g, x)
-
-# Memory allocation
-allocate(f, x)
-```
-
-## Temporal Composition
-
-Measure composed functions:
-
-```julia
-# Sequential composition
-t_seq = time_seq(f, g, x)
-
-# Parallel (when independent)
-t_par = time_par(f, g, x)
-```
+## Auto-Discovery Rules
+- If `bench/run_bench.jl` exists, it is used as the entry point.
+- Otherwise, all files matching `bench/benchmarks/*_benchmark.jl` are auto-discovered.
 
 ## Measurement Types
 
@@ -78,20 +38,5 @@ t_par = time_par(f, g, x)
 | Cache | Hit/miss rates |
 | Throughput | Items/second |
 
-## Integration
-
-Benchmarks auto-discovered:
-- `bench/run_bench.jl` used if exists
-- Otherwise `bench/benchmarks/*_benchmark.jl`
-
-## Testing
-
-```sh
-yon bench
-yon bench Poly
-```
-
-## Integration with superpowers
-
-Use with:
-- **superpowers:topos-yon-cli** - For running benchmarks
+## Composability
+Expects a package with `bench/` directory. Produces timing and allocation reports consumed by CI and development workflows.

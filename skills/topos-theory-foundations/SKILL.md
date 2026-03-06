@@ -1,242 +1,46 @@
 ---
 name: topos-theory-foundations
-description: Theory package - Yoneda, adjunctions, recursion schemes, and core categorical abstractions in Topos
+description: Use when working with Theory package foundations -- algebraic theory protocols, recursion schemes, functors, monads, and comonads
 ---
-
 # Topos Theory Foundations
 
-## Overview
+## When
+Invoke when defining algebraic theory protocols, using recursion schemes (cata, ana, histo, futu, chrono, zygo), or implementing functors, monads, and comonads in Theory.
 
-Theory is the equivariant kernel - the zero-dependency foundation of Topos. It provides algebraic theory protocols, the Yoneda lemma, adjunctions, and recursion schemes.
+## Iron Laws
+1. Theory is T0 -- zero external dependencies. Never add external deps.
+2. Every theory protocol defines objects, morphisms, and algebraic laws via `@theory`.
+3. Recursion schemes must use the correct algebra/coalgebra: cata folds with `F(A) -> A`, ana unfolds with `A -> F(A)`.
+4. All new abstractions must have algebraic law tests.
 
-## Purpose
+## Process
+1. Define theory protocols with `@theory ThName{Ops} begin ... end`, specifying objects, morphisms, and laws.
+2. Use `cata(algebra, data)` to fold (catamorphism): algebra has type `F(A) -> A`.
+3. Use `ana(coalgebra, seed)` to unfold (anamorphism): coalgebra has type `A -> F(A)`.
+4. Use `histo(algebra, data)` for histomorphism (fold with history).
+5. Use `futu(coalgebra, seed)` for futumorphism (unfold with future).
+6. Use `chrono(alg, coalg, data)` for chronomorphism (combines cata and ana).
+7. Use `zygo(witness, algebra, data)` for zygomorphism (fold with auxiliary accumulation).
+8. Implement functors by defining `fmap(f, fa)`.
+9. Implement monads by defining `return_m(a)` and `join(tta)`.
+10. Run tests: `yon test Theory`. Run benchmarks: `yon bench Theory`.
 
-Theory is T0 - zero external dependencies. It defines the categorical protocols that all other packages build upon.
+## Recursion Schemes
 
-## Core Components
-
-### 1. Algebraic Theory Protocols
-
-```julia
-using Theory
-
-# Define theory signature
-@theory ThMonoid{+, *, 1} begin
-    # Objects
-    (a, b, c)::Ob
-    
-    # Morphisms
-    +(a::Ob, b::Ob)::Ob
-    *(a::Ob, b::Ob)::Ob
-    one()::Ob
-    
-    # Laws
-    (a + b) * c == a + (b * c)  ⊣ [a::Ob, b::Ob, c::Ob]
-    one() * a == a                ⊣ [a::Ob]
-    a * one() == a                ⊣ [a::Ob]
-end
-```
-
-### 2. Yoneda Lemma
-
-The Yoneda lemma states: for any category C, functor F: C → Set:
-
-```
-Nat(Hom(A, -), F) ≅ F(A)
-```
-
-In Topos:
-
-```julia
-using Theory
-
-# Representable functor
-HomA = Yoneda(Hom, A)
-
-# Natural transformation to F
-η = to_yoneda(F, A)
-
-# Contravariant version
-HomA_op = Yoneda(Hom, A, contravariant=true)
-```
-
-### 3. Adjunctions
-
-An adjunction L ⊣ R is when L is left adjoint to R:
-
-```julia
-using Theory
-
-# L ⊣ R
-adjunction = Adjunction(L, R, unitit)
-
-# Unit, coun: η: Id → R∘L
-# Counit: ε: L∘R → Id
-
-# Triangle laws
-@test L(η) == ε ∘ L(η)
-@test R(ε) == η ∘ R(ε)
-```
-
-### 4. Recursion Schemes
-
-#### Catamorphism (fold)
-
-```julia
-using Theory
-
-# Fold: cata(algebra)
-# algebra: F(A) → A
-# unfolds: A → F(A)
-
-result = cata(algebra, data)
-```
-
-#### Anamorphism (unfold)
-
-```julia
-# Unfold: ana(coalgebra)
-# coalgebra: A → F(A)
-# unfolds: A
-
-result = ana(coalgebra, seed)
-```
-
-#### Histomorphism (refold with accumulation)
-
-```julia
-# histo: (F(A) → A) with history
-result = histo(algebra, data)
-```
-
-#### Futumorphism (cohistorphism)
-
-```julia
-# futu: (A → F(A)) with future
-result = futu(coalgebra, seed)
-```
-
-#### Chronomorphism
-
-```julia
-# chrono: combines cata and ana
-result = chrono(alg, coalg, data)
-```
-
-#### Zygo morphism
-
-```julia
-# zygo: with auxiliary accumulation
-result = zygo(witness, algebra, data)
-```
+| Scheme | Function | Type | Direction |
+|--------|----------|------|-----------|
+| Catamorphism | `cata` | F(A) -> A | Fold |
+| Anamorphism | `ana` | A -> F(A) | Unfold |
+| Hylomorphism | `hylo` | Both | Refold |
+| Histomorphism | `histo` | F(A) -> A + history | Fold with memory |
+| Futumorphism | `futu` | A -> F(A) + future | Unfold with lookahead |
+| Chronomorphism | `chrono` | Both + history/future | Combined |
+| Zygomorphism | `zygo` | F(A) -> A + witness | Fold with auxiliary |
 
 ## Key Abstractions
+- **Functor**: `fmap(f, fa)` preserving identity and composition.
+- **Monad**: `return_m(a)` (unit) + `join(tta)` (multiplication), satisfying left/right identity and associativity.
+- **Comonad**: `extract(wa)` (counit) + `extend(f, wa)` (comultiplication), satisfying dual laws.
 
-### Functors
-
-```julia
-# Functor F: C → D
-struct MyFunctor <: Functor
-    # Mapping data
-end
-
-# fmap: F(A) → F(B)
-fmap(f, fa) = # implement
-```
-
-### Monads
-
-```julia
-# Monad T: C → C with:
-# - return: A → T(A) (unit)
-# - join: T(T(A)) → T(A) (multiplication)
-
-struct MyMonad <: Monad
-    # data
-end
-
-return(m::MyMonad, a) = # lift into monad
-join(m::MyMonad, tta) = # flatten
-```
-
-### Comonads
-
-```julia
-# Comonad W: C → C with:
-# - extract: W(A) → A (counit)
-# - extend: W(A) → W(W(A))
-
-struct MyComonad <: Comonad
-    # data
-end
-
-extract(w::MyComonad, wa) = # project
-extend(w::MyComonad, f, wa) = # duplicate and map
-```
-
-## Testing
-
-```sh
-yon test Theory
-yon bench Theory
-```
-
-## Common Patterns
-
-### Implementing a New Theory
-
-```julia
-@theory ThMyTheory{Op} begin
-    # Signature
-    op(a::Ob, b::Ob)::Ob
-    
-    # Laws
-    op(a, a) == a ⊣ [a::Ob]  # idempotent
-    op(a, b) == op(b, a) ⊣ [a::Ob, b::Ob]  # commutative
-end
-```
-
-### Using Yoneda
-
-```julia
-# Create representable
-R = Yoneda(Hom, A)
-
-# Natural to any F
-η = to_yoneda(F, A)
-
-# Evaluate
-value = η(id)
-```
-
-### Building Adjunctions
-
-```julia
-# Free-forgetful adjunction
-L = Free(T)
-R = Forget(T)
-
-# Unit
-η = unit(L, R)
-
-# Counit  
-ε = counit(L, R)
-
-# Verify triangle laws
-L(η) == ε ∘ L(η)
-R(ε) == η ∘ R(ε)
-```
-
-## Integration with superpowers
-
-Use with:
-- **superpowers:topos-yon-cli** - For running tests
-- **superpowers:topos-testing** - For law verification
-- **superpowers:topos-algebra** - For free/cofree
-- **superpowers:topos-poly** - For polynomial functors
-
-## References
-
-- Theory/src/Yoneda/
-- Theory/src/Schemes/ (recursion)
-- docs/T0-Foundations/
+## Composability
+Expects LawKit for law verification. Produces algebraic theory protocols and recursion scheme functions consumed by all higher-tier packages (ExprFunctor, Initial, Terminal, Free, Cofree, Poly).

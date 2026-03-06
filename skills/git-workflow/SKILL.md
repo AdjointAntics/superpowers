@@ -1,6 +1,8 @@
 ---
 name: git-workflow
 description: Use when starting isolated feature work or finishing a development branch
+user-invocable: true
+argument-hint: "Branch name or describe the workflow action"
 ---
 # Git Workflow
 

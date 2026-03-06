@@ -1,117 +1,58 @@
 ---
 name: topos-categorical-reframing
-description: Apply category theory concepts specifically to the Topos codebase - Yoneda, adjunctions, free/cofree
+description: Use when mapping Topos concepts to category theory -- Yoneda, adjunctions, free/cofree, recursion schemes
 ---
-
 # Topos Categorical Reframing
 
-## Overview
+## When
+Invoke when you need to understand a Topos concept through its categorical foundation, or when designing new abstractions that must fit the existing categorical architecture.
 
-This skill maps Topos-specific concepts to their categorical foundations, enabling deeper understanding of the codebase.
+## Iron Laws
+1. Every Topos abstraction maps to a specific categorical concept. Identify the mapping before implementing.
+2. Dualities must be respected: Free/Cofree (syntax/observation), cata/ana (fold/unfold).
+3. Use `yon eval` to inspect categorical structure at runtime.
 
-## Core Mappings
+## Process
+1. Identify the Topos concept you are working with.
+2. Find its categorical mapping in the table below.
+3. Apply categorical reasoning (laws, universal properties, adjunctions).
+4. Translate the result back to Topos code.
+5. Verify with `yon eval <Pkg> 'yon()'` to inspect package relationships.
 
-### Topos Concept → Category Theory
+## Concept Mapping
 
 | Topos Concept | Category Theory | Description |
 |--------------|-----------------|-------------|
 | `yon()` | Yoneda lemma | Identity through relationships |
 | `yon eval` | Elaboration | Self-description/reflection |
-| Algebra/Free | Free functor | Build syntax from signature |
-| Algebra/Cofree | Cofree comonad | Observe from data |
+| Free.jl | Free functor | Build syntax from signature |
+| Cofree.jl | Cofree comonad | Observe from data |
 | Poly/Optics | Profunctor | Bidirectional access |
 | StateT | State monad | State threading |
 | `cata` | Catamorphism | Fold/consume |
 | `ana` | Anamorphism | Unfold/produce |
-| Adjunction L ⊣ R | Adjunction | Free/ forgetful |
+| Adjunction L -| R | Adjunction | Free/forgetful |
 
-### Package Relationships
-
-```
-Theory (T0) ──────► Algebra (T1)
-    │                    │
-    ▼                    ▼
- YonedaStyle ◄──────► Poly
-    │
-    ▼
- HomTime
-```
-
-### Key Duality
+## Package Relationships
 
 ```
-Algebra/Free  <->  Algebra/Cofree
-   (syntax)       (observation)
-   
-cata (fold)  <->  ana (unfold)
+Theory (T0) ------> Initial/Terminal (T2)
+    |                    |
+    v                    v
+ Yoneda/HomTime   Free/Cofree (T3)
+    |
+    v
+  Poly (T3) -----> PolyModes (T4)
 ```
 
-## Yoneda in Topos
+## Recursion Scheme Mapping
 
-Every `yon()` call is the Yoneda lemma in action:
-
-```julia
-yon eval Theory 'yon()'
-# Returns: (name, version, deps, exports)
-# This is Nat(Hom(Package, -), Id) ≅ Package
-```
-
-## Adjunctions in Topos
-
-### Free-Forgetful
-
-```julia
-L = Free{Signature}     # Left adjoint - creates free structure
-R = Forget{Signature}  # Right adjoint - forgets to underlying
-
-# L ⊣ R
-# Unit: η: Id → R∘L (wrap in free)
-# Counit: ε: L∘R → Id (evaluate)
-```
-
-### State
-
-```julia
-Get ⊣ Store
-# Get extracts, Store provides
-```
-
-## Recursion Schemes
-
-| Scheme | Topos | Category Theory |
-|--------|-------|-----------------|
+| Scheme | Function | Category Theory |
+|--------|----------|-----------------|
 | fold | `cata` | Catamorphism |
 | unfold | `ana` | Anamorphism |
 | refold | `hylo` | Hylomorphism |
-| histo | `histo` | Histomorphism |
+| history fold | `histo` | Histomorphism |
 
-## Optics as Profunctors
-
-```julia
-# Lens = Get ⊗ Put
-# Prism = Build ⊗ Match
-# Traversal = Traverse ⊗ Extract
-```
-
-## Using This Skill
-
-When working on Topos:
-
-1. Identify the categorical pattern
-2. Map to CT concept
-3. Apply categorical reasoning
-4. Translate back
-
-## Integration
-
-Use with:
-- **superpowers:topos-yon-cli** - Yoneda reflection
-- **superpowers:topos-algebra** - Free/cofree
-- **superpowers:topos-theory-foundations** - Core CT
-- **superpowers:topos-poly** - Optics
-
-## References
-
-- docs/T0-Foundations/
-- docs/T1-Adjunctions/
-- CLAUDE.md root
+## Composability
+Expects familiarity with the Topos package tier system. Produces categorical understanding that informs design decisions across all packages.

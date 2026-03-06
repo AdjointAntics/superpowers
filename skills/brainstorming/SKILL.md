@@ -1,6 +1,8 @@
 ---
 name: brainstorming
 description: Use before any creative work — features, components, behavior changes — to design before implementing
+user-invocable: true
+argument-hint: "Describe the feature or idea to brainstorm"
 ---
 # Brainstorming
 

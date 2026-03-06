@@ -1,6 +1,7 @@
 ---
 name: parallel-execution
 description: Use when facing 2+ independent tasks with no shared state
+context: fork
 ---
 # Parallel Execution
 

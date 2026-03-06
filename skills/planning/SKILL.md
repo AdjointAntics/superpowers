@@ -1,6 +1,8 @@
 ---
 name: planning
 description: Use when you have a design or spec to decompose into tasks, write a plan, and execute it
+user-invocable: true
+argument-hint: "Feature name or spec to plan"
 ---
 # Planning
 

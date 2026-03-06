@@ -1,6 +1,8 @@
 ---
 name: code-review
 description: Use when requesting or receiving code review on completed work
+user-invocable: true
+argument-hint: "PR number, branch name, or describe what to review"
 ---
 # Code Review
 

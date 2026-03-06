@@ -1,269 +1,77 @@
 ---
 name: poly-widget-composition
-description: Monoidal widget composition via tensor products, string diagrams, and braided categories using Poly
+description: Use when composing UI widgets with tensor/sequential/choice operators, building layouts, or handling events via monoidal composition -- uses Poly's four monoidal structures
 ---
-
 # Poly Widget Composition
 
-## Categorical Foundation
+## When
+Invoke when you need to compose widgets into layouts, combine event handlers, or build complex UIs from primitive components using Poly's composition operators.
 
-Widget composition forms a **monoidal category** with:
-- **(⊗)**: Tensor product - horizontal (parallel) composition
-- **(+)** : Coproduct - vertical (choice) composition
-- **String diagrams**: Commutative diagrams for visual composition
+## Iron Laws
+1. Use the correct operator for intent: `<otimes>` for parallel, `<triangleright>` for sequential, `+` for choice.
+2. Verify identity and associativity laws hold for composed widgets.
+3. Prefer declarative composition over imperative nesting.
 
-## Core Concept: Widget Monoid
+## Process
+1. Use composition operators:
+   ```julia
+   horizontal = button <otimes> label <otimes> input   # parallel (side-by-side)
+   vertical   = header <triangleright> content <triangleright> footer  # sequential (top-to-bottom)
+   tabs       = tab1 + tab2 + tab3              # choice (one shown)
+   ```
+2. Create primitive widgets:
+   ```julia
+   text   = Text("Hello, World!")
+   button = Button("Click me", on_click)
+   input  = Input(placeholder="Enter text...")
+   image  = Image(src="image.png")
+   ```
+3. Use container widgets:
+   ```julia
+   vstack([widget1, widget2, widget3])
+   hstack([widget1, widget2])
+   grid(rows=3, cols=3)
+   ```
+4. Build layouts:
+   ```julia
+   header  = title_widget <otimes> subtitle_widget
+   content = form_widget <otimes> button_widget
+   app     = header <triangleright> content <triangleright> footer
+   ```
+5. Use grid placement:
+   ```julia
+   grid = Grid(rows=3, cols=3)
+   grid[1, 1:3] = header
+   grid[2, 1]   = sidebar
+   grid[2, 2:3] = main_content
+   grid[3, :]   = footer
+   ```
+6. Compose event handlers:
+   ```julia
+   handler = on_click(button1) <otimes> on_hover(image)  # both active
+   chain   = handler1 <triangleright> handler2            # sequential
+   ```
+7. Swap widget order: `swap = braid(widget_a, widget_b)`.
+8. Render string diagrams: `draw(diagram)` via `Poly.Diagrams`.
 
+### Four Monoidal Structures
+
+| Structure | Operator | Unit | Meaning |
+|-----------|----------|------|---------|
+| Sequential | `<triangleright>` | identity | Function application (top-to-bottom) |
+| Parallel | `<otimes>` | empty | Layout (side-by-side) |
+| Choice | `+` | none | Alternative (tabs) |
+| Product | `x` | unit | Intersection (both render) |
+
+### Conditional & Recursive
 ```julia
-using Poly
-
-# Widgets form a monoidal category (W, ⊗, unit)
-#
-# - Identity: single widget
-# - Tensor: horizontal composition (side by side)
-# - Unit: empty widget
-
-widget1 = Text("Hello")
-widget2 = Text("World")
-
-# Horizontal: both display together
-combined = widget1 ⊗ widget2
-```
-
-## Composition Operators
-
-### Tensor (Horizontal)
-
-```julia
-# Side-by-side composition: (⊗)
-horizontal = button ⊗ label ⊗ input
-
-# This is the tensor in the monoidal category
-```
-
-### Sequential
-
-```julia
-# Top-to-bottom composition: (▷)
-vertical = header ▷ content ▷ footer
-
-# Sequential layout - output of one feeds to next
-```
-
-### Choice
-
-```julia
-# Alternative (coproduct): (+)
-alternatives = tab1 + tab2 + tab3
-
-# Tab selection - any one shown
-```
-
-## Widget Types
-
-### Primitive Widgets
-
-```julia
-# Text display
-text = Text("Hello, World!")
-
-# Button
-button = Button("Click me", on_click)
-
-# Input field  
-input = Input(placeholder="Enter text...")
-
-# Image
-image = Image(src="image.png")
-```
-
-### Container Widgets
-
-```julia
-# Vertical stack
-vstack([widget1, widget2, widget3])
-
-# Horizontal stack
-hstack([widget1, widget2])
-
-# Grid
-grid(rows=3, cols=3)
-```
-
-## String Diagrams
-
-Widget composition is captured by **string diagrams**:
-
-```julia
-# String diagram for: (f ⊗ g) ▷ h
-#
-#     f     g
-#     │     │
-#     ├─────┤
-#         │
-#         h
-#         │
-
-diagram = (f ⊗ g) ▷ h
-```
-
-### Drawing
-
-```julia
-# Render the string diagram
-using Poly.Diagrams
-
-draw(diagram)
-```
-
-## Monoidal Structures
-
-### The Four Monoidal Structures on Widgets
-
-| Structure | Tensor | Unit | Description |
-|-----------|--------|------|-------------|
-| Sequential (▷) | composition | identity | Function application |
-| Parallel (⊗) | side-by-side | empty | Layout |
-| Choice (+) | tabs | none | Alternative |
-| Product (×) | both render | unit | Intersection |
-
-### Braiding
-
-```julia
-# Swap widgets: σ: A ⊗ B → B ⊗ A
-swap = braid(widget_a, widget_b)
-
-# For layout reordering
-```
-
-## Layout Composition
-
-### Vertical Stack
-
-```julia
-# VStack: sequential composition
-header = title_widget ⊗ subtitle_widget
-content = form_widget ⊗ button_widget
-footer = copyright_widget
-
-app = header ▷ content ▷ footer
-```
-
-### Horizontal Layout
-
-```julia
-# Side-by-side
-sidebar ⊗ main_content
-
-# With proportional sizing  
-sidebar ⊗ (2 * main_content)
-```
-
-### Grid Layout
-
-```julia
-# Grid with placement
-grid = Grid(rows=3, cols=3)
-grid[1, 1:3] = header
-grid[2, 1] = sidebar
-grid[2, 2:3] = main_content  
-grid[3, :] = footer
-```
-
-## Composing Behaviors
-
-### Event Handling
-
-```julia
-# Compose event handlers
-handler = on_click(button1) ⊗ on_hover(image)
-
-# Sequential: first, then second
-handler1 ▷ handler2
-
-# Parallel: both active
-handler1 ⊗ handler2
-```
-
-### State Updates
-
-```julia
-# State computation composition
-state1 = compute_state(data1)
-state2 = compute_state(data2)
-
-# Combined state
-combined_state = state1 ⊗ state2
-
-# Sequential update
-final_state = state1 ▷ state2
-```
-
-## The Monoidal Category
-
-### Identity Laws
-
-```julia
-# Left identity
-empty ⊗ widget == widget
-
-# Right identity
-widget ⊗ empty == widget
-
-# Associativity
-(widget1 ⊗ widget2) ⊗ widget3 == widget1 ⊗ (widget2 ⊗ widget3)
-```
-
-### Unit
-
-```julia
-# Empty widget (unit of ⊗)
-empty = EmptyWidget()
-
-# No-op (unit of ▷)  
-identity = IdentityWidget()
-```
-
-## Advanced Composition
-
-### Conditional Rendering
-
-```julia
-# Show one of many: coproduct
-tab1 + tab2 + tab3
-
-# Selection determines which renders
-selected = tabs(active_tab) ⊗ (tab1 + tab2 + tab3)
-```
-
-### Recursive Layouts
-
-```julia
-# Tree structure via recursion
-function tree_widget(node)
-    if is_leaf(node)
-        return Text(node.value)
-    else
-        return tree_widget(node.left) ⊗ tree_widget(node.right)
-    end
+selected = tabs(active_tab) <otimes> (tab1 + tab2 + tab3)  # conditional
+
+function tree_widget(node)                          # recursive
+    is_leaf(node) ? Text(node.value) :
+        tree_widget(node.left) <otimes> tree_widget(node.right)
 end
 ```
 
-## Integration
-
-Use with:
-- **superpowers:poly-ui-representation** - Data representation
-- **superpowers:compound-feedback-loop** - Visualize benchmarks
-
-## Key Principles
-
-1. **Monoidal category** - Widgets compose with ⊗, ▷, +
-2. **String diagrams** - Visual representation of composition
-3. **Braided** - Can swap positions naturally
-4. **Universal** - Identity and unit laws hold
-
-## References
-
-- Poly.Modes: Layout widgets
-- Poly.Diagrams: String diagrams
-- Monoidal structures: See CLAUDE.md
+## Composability
+Expects primitive widgets or polynomial functor representations from poly-ui-representation. Produces composed widget trees ready for rendering via PolyModes.jl.
